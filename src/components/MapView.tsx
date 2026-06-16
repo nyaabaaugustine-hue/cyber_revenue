@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { MapPin, Navigation, Layers, X, Building2, User, Phone, Clock, DollarSign, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Layers, X, User, Phone, Clock, DollarSign, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Business, AgentStats } from '../types';
 import { formatCurrency, formatRelativeTime } from '../utils/designTokens';
 
@@ -44,119 +44,73 @@ export function MapView({
   const markersLayerRef = useRef<any>(null);
   const agentsLayerRef = useRef<any>(null);
   const markerRefs = useRef<Map<string, any>>(new Map());
-  const clusterGroupRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [showLayerPanel, setShowLayerPanel] = useState(false);
   const [layers, setLayers] = useState({ businesses: true, agents: true, zones: false, heatmap: false });
   const [popupData, setPopupData] = useState<{ type: 'business' | 'agent'; data: any; position: { x: number; y: number } } | null>(null);
-  const [clusterReady, setClusterReady] = useState(false);
 
-  // Load Leaflet
+  // Load Leaflet once
   useEffect(() => {
     let destroyed = false;
     const load = async () => {
       if (typeof window === 'undefined' || destroyed) return;
-      if ((window as any).L) { initializeMap(); return; }
+      if ((window as any).L) { initMap(); return; }
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
       document.head.appendChild(link);
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.onload = () => {
-        // Load marker cluster
-        const clusterLink = document.createElement('link');
-        clusterLink.rel = 'stylesheet';
-        clusterLink.href = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css';
-        document.head.appendChild(clusterLink);
-        const clusterLink2 = document.createElement('link');
-        clusterLink2.rel = 'stylesheet';
-        clusterLink2.href = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css';
-        document.head.appendChild(clusterLink2);
-        const clusterScript = document.createElement('script');
-        clusterScript.src = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js';
-        clusterScript.onload = () => { setClusterReady(true); };
-        document.head.appendChild(clusterScript);
-        if (!destroyed) initializeMap();
-      };
+      script.onload = () => { if (!destroyed) initMap(); };
       document.head.appendChild(script);
     };
+
+    const initMap = () => {
+      if (!mapContainerRef.current || !(window as any).L) return;
+      const L = (window as any).L;
+      const map = L.map(mapContainerRef.current, {
+        center: [KUMASI_CENTER.lat, KUMASI_CENTER.lng],
+        zoom: DEFAULT_ZOOM,
+        zoomControl: false,
+      });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19,
+      }).addTo(map);
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
+      markersLayerRef.current = L.layerGroup().addTo(map);
+      agentsLayerRef.current = L.layerGroup().addTo(map);
+      mapInstanceRef.current = map;
+      setIsLoaded(true);
+    };
+
     load();
     return () => { destroyed = true; if (mapInstanceRef.current) { mapInstanceRef.current.remove(); } };
   }, []);
 
-  const initializeMap = () => {
-    if (!mapContainerRef.current || !(window as any).L) return;
-    const L = (window as any).L;
-    const map = L.map(mapContainerRef.current, {
-      center: [KUMASI_CENTER.lat, KUMASI_CENTER.lng],
-      zoom: DEFAULT_ZOOM,
-      zoomControl: false,
-    });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19,
-    }).addTo(map);
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-    markersLayerRef.current = L.layerGroup().addTo(map);
-    agentsLayerRef.current = L.layerGroup().addTo(map);
-    mapInstanceRef.current = map;
-    setIsLoaded(true);
-  };
-
-  useEffect(() => {
-    if (!isLoaded || !mapInstanceRef.current || !clusterReady) return;
-    const L = (window as any).L;
-    const map = mapInstanceRef.current;
-    if (clusterGroupRef.current) { map.removeLayer(clusterGroupRef.current); }
-    clusterGroupRef.current = L.markerClusterGroup({
-      chunkedLoading: true,
-      maxClusterRadius: 50,
-      spiderfyOnMaxZoom: true,
-      showCoverageOnHover: false,
-      iconCreateFunction: (cluster: any) => {
-        const count = cluster.getChildCount();
-        let color = '#10B981';
-        if (count > 10) color = '#F59E0B';
-        if (count > 20) color = '#EF4444';
-        return L.divIcon({
-          html: `<div style="
-            width: 40px; height: 40px; border-radius: 50%;
-            background: ${color}; color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 13px;
-            border: 3px solid rgba(255,255,255,0.8);
-            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-          ">${count}</div>`,
-          className: 'cluster-marker',
-          iconSize: [40, 40],
-        });
-      },
-    });
-    map.addLayer(clusterGroupRef.current);
-  }, [isLoaded, clusterReady]);
-
-  // Fly to
+  // Fly to location
   useEffect(() => {
     if (!isLoaded || !mapInstanceRef.current || !flyToLocation) return;
     mapInstanceRef.current.flyTo([flyToLocation.lat, flyToLocation.lng], flyToLocation.zoom || 17, { duration: 0.8 });
   }, [flyToLocation, isLoaded]);
 
-  // Business markers
+  // Business markers — always renders immediately without cluster CDN dependency
   useEffect(() => {
-    if (!isLoaded || !clusterGroupRef.current || !(window as any).L) return;
+    if (!isLoaded || !mapInstanceRef.current || !markersLayerRef.current || !(window as any).L) return;
     const L = (window as any).L;
-    const cluster = clusterGroupRef.current;
-    cluster.clearLayers();
+    const layer = markersLayerRef.current;
+    layer.clearLayers();
     markerRefs.current.clear();
     if (!layers.businesses) return;
+
     businesses.forEach(business => {
       if (!business.location) return;
       const colors = levyStatusColors[business.levyStatus] || levyStatusColors.paid;
       const isSelected = business.id === selectedBusinessId;
       const isHovered = business.id === hoveredBusinessId;
-      const size = isSelected ? 34 : isHovered ? 32 : 28;
+      const size = isSelected ? 38 : isHovered ? 34 : 30;
       const borderWidth = isSelected ? 4 : 3;
+
       const icon = L.divIcon({
         className: 'custom-marker',
         html: `
@@ -166,39 +120,48 @@ export function MapView({
             border-radius: 50% 50% 50% 0;
             transform: rotate(-45deg);
             border: ${borderWidth}px solid white;
-            box-shadow: 0 ${isSelected ? 4 : 2}px ${isSelected ? 16 : 8}px rgba(0,0,0,${isSelected ? 0.4 : 0.25});
+            box-shadow: 0 ${isSelected ? 6 : 2}px ${isSelected ? 20 : 8}px rgba(0,0,0,${isSelected ? 0.45 : 0.25});
             display: flex; align-items: center; justify-content: center;
             transition: all 0.2s ease;
-            ${isSelected ? `animation: pulse-marker 1.5s infinite;` : ''}
+            ${isSelected ? 'animation: marker-pulse 1.2s ease-in-out infinite;' : ''}
           ">
             <div style="
               transform: rotate(45deg);
               color: white;
               font-size: 11px;
               font-weight: 700;
-              font-family: 'Inter', sans-serif;
+              font-family: Inter, sans-serif;
             ">${business.businessId.split('-')[1]}</div>
           </div>
           ${isSelected ? `<div style="
+            position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
+            white-space: nowrap; background: rgba(0,0,0,0.85); color: white;
+            padding: 3px 10px; border-radius: 6px; font-size: 11px;
+            font-family: Inter, sans-serif; font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          ">${business.name}</div>` : ''}
+          ${isHovered && !isSelected ? `<div style="
             position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
-            white-space: nowrap; background: rgba(0,0,0,0.8); color: white;
+            white-space: nowrap; background: rgba(0,0,0,0.7); color: white;
             padding: 2px 8px; border-radius: 4px; font-size: 10px;
-            font-family: 'Inter', sans-serif; font-weight: 500;
-          ">${business.name.length > 20 ? business.name.slice(0, 20) + '...' : business.name}</div>` : ''}
+            font-family: Inter, sans-serif;
+          ">${business.businessId}</div>` : ''}
         `,
         iconSize: [size, size],
         iconAnchor: [size / 2, size],
       });
+
       const marker = L.marker([business.location.lat, business.location.lng], { icon });
       markerRefs.current.set(business.id, marker);
-      cluster.addLayer(marker);
+      layer.addLayer(marker);
+
       marker.on('click', (e: any) => {
         const containerPoint = mapInstanceRef.current.latLngToContainerPoint(e.target.getLatLng());
         setPopupData({ type: 'business', data: business, position: { x: containerPoint.x, y: containerPoint.y } });
         onBusinessClick?.(business);
       });
     });
-  }, [businesses, isLoaded, layers.businesses, selectedBusinessId, hoveredBusinessId]);
+  }, [businesses, isLoaded, layers.businesses, selectedBusinessId, hoveredBusinessId, onBusinessClick]);
 
   // Agent markers
   useEffect(() => {
@@ -215,12 +178,12 @@ export function MapView({
           <div style="position: relative;">
             <div style="
               width: ${isSelected ? 44 : 36}px; height: ${isSelected ? 44 : 36}px;
-              background: #3B82F6;
+              background: ${isSelected ? '#2563EB' : '#3B82F6'};
               border-radius: 50%;
               border: ${isSelected ? 4 : 3}px solid white;
               box-shadow: 0 2px 12px rgba(59, 130, 246, 0.5);
               display: flex; align-items: center; justify-content: center;
-              animation: pulse-agent 2s infinite;
+              animation: agent-pulse 2s infinite;
             ">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -229,7 +192,7 @@ export function MapView({
             </div>
             <div style="
               position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
-              background: ${isSelected ? '#3B82F6' : '#1E293B'};
+              background: ${isSelected ? '#2563EB' : '#1E293B'};
               color: white; padding: 2px 8px; border-radius: 4px;
               font-size: 10px; white-space: nowrap;
               font-family: Inter, sans-serif; font-weight: 500;
@@ -246,11 +209,11 @@ export function MapView({
         onAgentClick?.(agent);
       });
     });
-  }, [agents, isLoaded, layers.agents, selectedAgentId]);
+  }, [agents, isLoaded, layers.agents, selectedAgentId, onAgentClick]);
 
   useEffect(() => {
-    const handleClick = () => setPopupData(null);
-    if (popupData) { document.addEventListener('click', handleClick); return () => document.removeEventListener('click', handleClick); }
+    const handler = () => setPopupData(null);
+    if (popupData) { document.addEventListener('click', handler); return () => document.removeEventListener('click', handler); }
   }, [popupData]);
 
   return (
@@ -309,13 +272,13 @@ export function MapView({
           </div>
         </div>
       </div>
-      {/* Cluster count hint */}
+      {/* Business count */}
       {isLoaded && businesses.length > 0 && (
         <div className="absolute top-4 left-4 z-10 bg-background/90 backdrop-blur-sm rounded-lg shadow border px-3 py-1.5">
           <span className="text-xs font-medium text-foreground">{businesses.length} business{businesses.length !== 1 ? 'es' : ''} on map</span>
         </div>
       )}
-      {/* Popup */}
+      {/* Floating popup on marker click */}
       {popupData && (
         <div className="absolute z-20 bg-background rounded-xl shadow-2xl border w-80 overflow-hidden"
           style={{ left: `${Math.min(popupData.position.x, (mapContainerRef.current?.clientWidth || 400) - 320)}px`,
@@ -369,7 +332,7 @@ export function MapView({
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Levy</p>
-                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold mt-0.5`}
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold mt-0.5"
                         style={{ backgroundColor: colors.fill + '20', color: colors.fill }}>
                         {b.levyStatus === 'paid' && <CheckCircle2 className="w-3 h-3" />}
                         {b.levyStatus === 'overdue' && <AlertTriangle className="w-3 h-3" />}
@@ -437,16 +400,10 @@ export function MapView({
         </div>
       )}
       <style>{`
-        @keyframes pulse-agent { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
-        @keyframes pulse-marker { 0%,100% { box-shadow: 0 4px 16px rgba(0,0,0,0.4); } 50% { box-shadow: 0 4px 24px rgba(0,0,0,0.6); } }
-        .leaflet-container { font-family: 'Inter', system-ui, sans-serif; }
-        .custom-marker, .agent-marker, .cluster-marker { background: transparent !important; border: none !important; }
-        .marker-cluster-small { background-color: rgba(16, 185, 129, 0.3); }
-        .marker-cluster-small div { background-color: #10B981; }
-        .marker-cluster-medium { background-color: rgba(245, 158, 11, 0.3); }
-        .marker-cluster-medium div { background-color: #F59E0B; }
-        .marker-cluster-large { background-color: rgba(239, 68, 68, 0.3); }
-        .marker-cluster-large div { background-color: #EF4444; }
+        @keyframes agent-pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
+        @keyframes marker-pulse { 0%,100% { box-shadow: 0 6px 20px rgba(0,0,0,0.45); transform: rotate(-45deg) scale(1); } 50% { box-shadow: 0 6px 30px rgba(0,0,0,0.6); transform: rotate(-45deg) scale(1.1); } }
+        .leaflet-container { font-family: Inter, system-ui, sans-serif; }
+        .custom-marker, .agent-marker { background: transparent !important; border: none !important; }
       `}</style>
     </div>
   );
