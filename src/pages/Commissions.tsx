@@ -11,7 +11,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { DollarSign, TrendingUp, TrendingDown, Users2 } from "lucide-react";
+import { IcnDollar as DollarSign, IcnTrendUp as TrendingUp, IcnTrendDown as TrendingDown, IcnUsers2 as Users2 } from "@/components/ui/Icons";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger,
 } from "@/components/ui/sheet";

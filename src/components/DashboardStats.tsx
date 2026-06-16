@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { IcnTrendUp as TrendingUp, IcnTrendDown as TrendingDown, IcnMinus as Minus } from '@/components/ui/Icons';
 import { DashboardMetrics } from '../types';
 import { formatCurrency, formatNumber, formatPercent } from '../utils/designTokens';
 

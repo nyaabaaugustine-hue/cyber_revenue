@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings as SettingsIcon, Shield, Bell, Globe, Palette, Database, Save } from "lucide-react";
+import { IcnSettings as SettingsIcon, IcnShield as Shield, IcnBell as Bell, IcnGlobe as Globe, IcnCircle as Palette, IcnDatabase as Database, IcnSave as Save } from "@/components/ui/Icons";
 import { useAuth } from "../utils/AuthContext";
 import { hasPermission } from "../utils/permissions";
 import { formatCurrency } from "../utils/data";
@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { toast } from "sonner";
 
 export function Settings() {
   const { user } = useAuth();
@@ -38,7 +39,7 @@ export function Settings() {
           <h1 className="text-2xl font-bold text-foreground">System Settings</h1>
           <p className="text-muted-foreground mt-1">Configure your district assembly preferences</p>
         </div>
-        <Button>
+        <Button onClick={() => toast.success('Settings saved successfully')}>
           <Save className="w-4 h-4 mr-2" />
           Save Changes
         </Button>
@@ -164,10 +165,10 @@ export function Settings() {
                     <p className="text-sm font-medium text-foreground">{zone.name}</p>
                     <p className="text-xs text-muted-foreground">{zone.info}</p>
                   </div>
-                  <Button variant="outline" size="sm">Edit</Button>
+                  <Button variant="outline" size="sm" onClick={() => toast.info(`Editing zone: ${zone.name}`)}>Edit</Button>
                 </div>
               ))}
-              <Button variant="outline" className="w-full border-dashed">
+              <Button variant="outline" className="w-full border-dashed" onClick={() => toast.success('New zone creation form opened')}>
                 + Add New Zone
               </Button>
             </CardContent>
@@ -196,16 +197,21 @@ export function Settings() {
               <div className="space-y-2">
                 <Label>Accent Color</Label>
                 <div className="flex gap-2">
-                  {["bg-indigo-500", "bg-emerald-500", "bg-orange-500", "bg-rose-500", "bg-violet-500"].map(
-                    (color, i) => (
-                      <button
-                        key={i}
-                        className={`w-8 h-8 rounded-full ${color} ${
-                          i === 0 ? "ring-2 ring-ring ring-offset-2 ring-offset-background" : ""
-                        }`}
-                      />
-                    )
-                  )}
+                  {[
+                    { cls: "bg-indigo-500", name: "Indigo" },
+                    { cls: "bg-emerald-500", name: "Emerald" },
+                    { cls: "bg-orange-500", name: "Orange" },
+                    { cls: "bg-rose-500", name: "Rose" },
+                    { cls: "bg-violet-500", name: "Violet" },
+                  ].map(({ cls, name }, i) => (
+                    <button
+                      key={i}
+                      className={`w-8 h-8 rounded-full ${cls} ${
+                        i === 0 ? "ring-2 ring-ring ring-offset-2 ring-offset-background" : ""
+                      }`}
+                      onClick={() => toast.success(`Accent color changed to ${name}`)}
+                    />
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -226,7 +232,7 @@ export function Settings() {
                   </div>
                   <Badge variant="warning">12 pending</Badge>
                 </div>
-                <Button size="sm">Sync Now</Button>
+                <Button size="sm" onClick={() => { toast.loading('Syncing...', { duration: 2000 }); setTimeout(() => toast.success('Sync completed successfully'), 2000); }}>Sync Now</Button>
               </div>
 
               <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
@@ -253,8 +259,8 @@ export function Settings() {
                   <p className="text-xs text-muted-foreground">Download all district data</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">Export CSV</Button>
-                  <Button variant="outline" size="sm">Export JSON</Button>
+                  <Button variant="outline" size="sm" onClick={() => toast.success('Data exported as CSV')}>Export CSV</Button>
+                  <Button variant="outline" size="sm" onClick={() => toast.success('Data exported as JSON')}>Export JSON</Button>
                 </div>
               </div>
             </CardContent>

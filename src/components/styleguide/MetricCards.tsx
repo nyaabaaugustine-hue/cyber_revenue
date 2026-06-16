@@ -1,4 +1,4 @@
-import { TrendingUp, Users, Target, CheckCircle } from 'lucide-react';
+import { IcnTrendUp as TrendingUp, IcnUsers as Users, IcnTarget as Target, IcnCheckCircle as CheckCircle } from '@/components/ui/Icons';
 import { formatCurrency } from '../../utils/designTokens';
 
 export function MetricCards() {

@@ -1,4 +1,4 @@
-import { Check, X } from 'lucide-react';
+import { IcnCheck as Check, IcnX as X } from '@/components/ui/Icons';
 
 export function DoAndDont() {
   const dos = [

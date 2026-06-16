@@ -11,7 +11,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Building2, CheckCircle2, AlertTriangle, XCircle, HelpCircle, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { IcnBuilding as Building2, IcnCheckCircle2 as CheckCircle2, IcnWarning as AlertTriangle, IcnX as XCircle, IcnHelpCircle as HelpCircle, IcnArrowUpDown as ArrowUpDown, IcnArrowUp as ArrowUp, IcnArrowDown as ArrowDown } from "@/components/ui/Icons";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger,
 } from "@/components/ui/sheet";

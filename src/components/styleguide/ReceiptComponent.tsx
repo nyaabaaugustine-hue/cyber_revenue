@@ -1,4 +1,4 @@
-import { QrCode } from 'lucide-react';
+import { IcnQrCode as QrCode } from '@/components/ui/Icons';
 
 export function ReceiptComponent() {
   return (

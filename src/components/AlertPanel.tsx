@@ -1,5 +1,5 @@
 import { Alert as AlertType } from "../types";
-import { AlertTriangle, Clock, Wifi, MapPin, Info, X } from "lucide-react";
+import { IcnWarning as AlertTriangle, IcnClock as Clock, IcnWifi as Wifi, IcnMapPin as MapPin, IcnInfo as Info, IcnX as X } from "@/components/ui/Icons";
 
 interface AlertPanelProps {
   alerts: AlertType[];

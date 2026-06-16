@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Plus, Search, Mail, Edit, MoreVertical } from "lucide-react";
+import { IcnShield as Shield, IcnPlus as Plus, IcnSearch as Search, IcnMail as Mail, IcnEdit as Edit, IcnMoreV as MoreVertical } from "@/components/ui/Icons";
 import { useAuth } from "../utils/AuthContext";
 import { hasPermission, roleLabels, roleBadgeStyles } from "../utils/permissions";
 import { users, agentStats, formatDate } from "../utils/data";
@@ -13,6 +13,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 export function Users() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -73,7 +74,7 @@ export function Users() {
           <p className="text-muted-foreground mt-1">Manage system users and their permissions</p>
         </div>
         {hasPermission(currentUser?.role || "admin", "users", "create") && (
-          <Button>
+          <Button onClick={() => toast.success('User creation form opened')}>
             <Plus className="w-4 h-4 mr-2" />
             Add User
           </Button>
@@ -174,15 +175,15 @@ export function Users() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); window.open(`mailto:${user.email}`, '_blank'); }}>
                               <Mail className="w-4 h-4" />
                             </Button>
                             {hasPermission(currentUser?.role || "admin", "users", "edit") && (
-                              <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); toast.info('Edit user form opened'); }}>
                                 <Edit className="w-4 h-4" />
                               </Button>
                             )}
-                            <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); toast.info('More options opened'); }}>
                               <MoreVertical className="w-4 h-4" />
                             </Button>
                           </div>

@@ -1,4 +1,4 @@
-import { TrendingUp, DollarSign, Users, Building2, Activity, AlertTriangle } from "lucide-react";
+import { IcnTrendUp as TrendingUp, IcnDollar as DollarSign, IcnUsers as Users, IcnBuilding as Building2, IcnActivity as Activity, IcnWarning as AlertTriangle } from "@/components/ui/Icons";
 import { dashboardStats, agentStats, recentCollections, alerts, revenueTrend, categoryBreakdown, businesses, formatCurrency } from "../utils/data";
 import { MapView } from "../components/MapView";
 import { useAuth } from "../utils/AuthContext";

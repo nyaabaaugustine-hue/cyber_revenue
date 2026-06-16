@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { IcnWarning as AlertTriangle, IcnRefresh as RefreshCw } from '@/components/ui/Icons';
 import { Button } from '../ui/button';
 
 interface ErrorBoundaryState {

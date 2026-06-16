@@ -9,10 +9,14 @@ export const currentUser: User = {
   role: "admin",
   districtId: "dist-1",
   districtName: "Kumasi Metropolitan",
-  avatarUrl: "https://images.unsplash.com/photo-1472099625465-8c8e0b8e8e0b?w=100&h=100&fit=crop&crop=face",
+  avatarUrl: "https://ui-avatars.com/api/?name=Kwame+Asante&background=1e3a5f&color=fff&size=200&bold=true",
   isActive: true,
   lastActiveAt: "2024-06-14T10:30:00Z"
 };
+
+export function getUserByEmail(email: string): User | undefined {
+  return users.find(u => u.email.toLowerCase() === email.toLowerCase()) || users.find(u => u.role === 'admin');
+}
 
 export const dashboardStats: DashboardStats = {
   todayRevenue: 24580,
@@ -376,6 +380,84 @@ export const recentCollections: Collection[] = [
   }
 ];
 
+export const dueCollections = [
+  {
+    id: 'due-1', businessId: 'BIZ-001', businessName: 'Adom Supermarket', amountDue: 2500,
+    dueDate: '2024-06-10', daysOverdue: 4, status: 'overdue' as const,
+    zone: 'Zone A - Central', ownerName: 'Kwesi Adom', ownerPhone: '+233 24 111 2233'
+  },
+  {
+    id: 'due-2', businessId: 'BIZ-002', businessName: 'Amakom Pharmacy', amountDue: 1800,
+    dueDate: '2024-06-12', daysOverdue: 2, status: 'overdue' as const,
+    zone: 'Zone A - Central', ownerName: 'Akosua Mensah', ownerPhone: '+233 24 222 3344'
+  },
+  {
+    id: 'due-3', businessId: 'BIZ-003', businessName: 'Kejetia Traders', amountDue: 3200,
+    dueDate: '2024-06-15', daysOverdue: -1, status: 'due' as const,
+    zone: 'Zone B - Adum', ownerName: 'Yaw Boateng', ownerPhone: '+233 24 333 4455'
+  },
+  {
+    id: 'due-4', businessId: 'BIZ-004', businessName: 'Asafo Hardware', amountDue: 950,
+    dueDate: '2024-06-08', daysOverdue: 6, status: 'overdue' as const,
+    zone: 'Zone C - Bantama', ownerName: 'Ama Serwaa', ownerPhone: '+233 24 444 5566'
+  },
+  {
+    id: 'due-5', businessId: 'BIZ-005', businessName: 'Bantama Mart', amountDue: 1500,
+    dueDate: '2024-06-14', daysOverdue: 0, status: 'due' as const,
+    zone: 'Zone C - Bantama', ownerName: 'Kofi Asante', ownerPhone: '+233 24 555 6677'
+  },
+  {
+    id: 'due-6', businessId: 'BIZ-006', businessName: 'Suame Auto Parts', amountDue: 4200,
+    dueDate: '2024-06-05', daysOverdue: 9, status: 'overdue' as const,
+    zone: 'Zone D - Suame', ownerName: 'Emmanuel Nyarko', ownerPhone: '+233 24 666 7788'
+  },
+  {
+    id: 'due-7', businessId: 'BIZ-007', businessName: 'Tafo Textiles', amountDue: 1100,
+    dueDate: '2024-06-13', daysOverdue: 1, status: 'overdue' as const,
+    zone: 'Zone E - Tafo', ownerName: 'Akua Frimpong', ownerPhone: '+233 24 777 8899'
+  },
+  {
+    id: 'due-8', businessId: 'BIZ-008', businessName: 'Dichemso Grocers', amountDue: 780,
+    dueDate: '2024-06-18', daysOverdue: -4, status: 'due' as const,
+    zone: 'Zone A - Central', ownerName: 'Mensah Osei', ownerPhone: '+233 24 888 9900'
+  },
+  {
+    id: 'due-9', businessId: 'BIZ-009', businessName: 'Adum Electronics', amountDue: 500,
+    dueDate: '2024-06-20', daysOverdue: -6, status: 'due' as const,
+    zone: 'Zone B - Adum', ownerName: 'Nana Yaa', ownerPhone: '+233 24 999 0011'
+  },
+  {
+    id: 'due-10', businessId: 'BIZ-010', businessName: 'Abinkuu Market Stalls', amountDue: 2800,
+    dueDate: '2024-06-07', daysOverdue: 7, status: 'overdue' as const,
+    zone: 'Zone D - Suame', ownerName: 'Rashid Mohammed', ownerPhone: '+233 25 111 2233'
+  },
+  {
+    id: 'due-11', businessId: 'BIZ-011', businessName: 'Asem North Store', amountDue: 1350,
+    dueDate: '2024-06-16', daysOverdue: -2, status: 'due' as const,
+    zone: 'Zone E - Tafo', ownerName: 'Grace Ofori', ownerPhone: '+233 25 222 3344'
+  },
+  {
+    id: 'due-12', businessId: 'BIZ-012', businessName: 'Bomso Restaurant', amountDue: 650,
+    dueDate: '2024-06-11', daysOverdue: 3, status: 'overdue' as const,
+    zone: 'Zone C - Bantama', ownerName: 'Abena Serwaah', ownerPhone: '+233 25 333 4455'
+  },
+  {
+    id: 'due-13', businessId: 'BIZ-013', businessName: 'Bantama Butchery', amountDue: 1900,
+    dueDate: '2024-06-09', daysOverdue: 5, status: 'partial' as const,
+    zone: 'Zone C - Bantama', ownerName: 'Issah Yakubu', ownerPhone: '+233 25 444 5566'
+  },
+  {
+    id: 'due-14', businessId: 'BIZ-014', businessName: 'Kejetia ShoeMart', amountDue: 300,
+    dueDate: '2024-06-22', daysOverdue: -8, status: 'due' as const,
+    zone: 'Zone B - Adum', ownerName: 'Abigail Donkor', ownerPhone: '+233 25 555 6677'
+  },
+  {
+    id: 'due-15', businessId: 'BIZ-015', businessName: 'Ayigya Mart', amountDue: 2200,
+    dueDate: '2024-06-06', daysOverdue: 8, status: 'overdue' as const,
+    zone: 'Zone A - Central', ownerName: 'Daniel Asare', ownerPhone: '+233 25 666 7788'
+  },
+];
+
 export const alerts: Alert[] = [
   {
     id: "alert-1",
@@ -463,7 +545,7 @@ export const users: User[] = [
     role: "admin",
     districtId: "dist-1",
     districtName: "Kumasi Metropolitan",
-    avatarUrl: "https://images.unsplash.com/photo-1472099625465-8c8e0b8e8e0b?w=100&h=100&fit=crop&crop=face",
+    avatarUrl: "https://ui-avatars.com/api/?name=Kwame+Asante&background=1e3a5f&color=fff&size=200&bold=true",
     isActive: true,
     lastActiveAt: "2024-06-14T10:30:00Z"
   },
@@ -477,7 +559,7 @@ export const users: User[] = [
     districtName: 'Kumasi Metropolitan',
     zoneId: "zone-1",
     zoneName: "Zone A - Central",
-    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face",
+    avatarUrl: "https://ui-avatars.com/api/?name=Abena+Yiadom&background=8b5cf6&color=fff&size=200&bold=true",
     isActive: true,
     lastActiveAt: "2024-06-14T10:25:00Z"
   },
@@ -489,9 +571,47 @@ export const users: User[] = [
     role: "supervisor",
     districtId: "dist-1",
     districtName: 'Kumasi Metropolitan',
-    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
+    avatarUrl: "https://ui-avatars.com/api/?name=John+Mensah&background=0891b2&color=fff&size=200&bold=true",
     isActive: true,
     lastActiveAt: "2024-06-14T09:00:00Z"
+  },
+  {
+    id: "user-4",
+    fullName: "Ms. Esi Gyan",
+    email: "esi.gyan@kma.gov.gh",
+    phone: "+233 24 456 7890",
+    role: "accountant",
+    districtId: "dist-1",
+    districtName: "Kumasi Metropolitan",
+    avatarUrl: "https://ui-avatars.com/api/?name=Esi+Gyan&background=059669&color=fff&size=200&bold=true",
+    isActive: true,
+    lastActiveAt: "2024-06-14T08:45:00Z"
+  },
+  {
+    id: "user-5",
+    fullName: "Mr. Kwabena Danso",
+    email: "kwabena.danso@kma.gov.gh",
+    phone: "+233 20 567 8901",
+    role: "manager",
+    districtId: "dist-1",
+    districtName: "Kumasi Metropolitan",
+    avatarUrl: "https://ui-avatars.com/api/?name=Kwabena+Danso&background=7c3aed&color=fff&size=200&bold=true",
+    isActive: true,
+    lastActiveAt: "2024-06-14T07:30:00Z"
+  },
+  {
+    id: "user-6",
+    fullName: "Mr. Kofi Appiah",
+    email: "kofi.appiah@kma.gov.gh",
+    phone: "+233 27 678 9012",
+    role: "field_officer",
+    districtId: "dist-1",
+    districtName: "Kumasi Metropolitan",
+    zoneId: "zone-2",
+    zoneName: "Zone B - Adum",
+    avatarUrl: "https://ui-avatars.com/api/?name=Kofi+Appiah&background=dc2626&color=fff&size=200&bold=true",
+    isActive: true,
+    lastActiveAt: "2024-06-14T06:00:00Z"
   }
 ];
 

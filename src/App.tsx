@@ -2,11 +2,11 @@ import { useState, useEffect, Suspense, lazy } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, Map, Building2, Users as UsersIcon, DollarSign,
-  FileText, Settings as SettingsIcon, Shield, ChevronLeft, Bell, Search,
-  ChevronDown, Menu, User, AlertTriangle, BarChart3, Activity, TrendingUp,
-  ShieldCheck, Scale, Building2 as Bank, Smartphone, ChevronRight,
-} from 'lucide-react';
+  IcnDashboard as LayoutDashboard, IcnMap as Map, IcnBuilding as Building2, IcnUsers as UsersIcon, IcnDollar as DollarSign,
+  IcnFile as FileText, IcnSettings as SettingsIcon, IcnShield as Shield, IcnChevronLeft as ChevronLeft, IcnBell as Bell, IcnSearch as Search,
+  IcnChevronDown as ChevronDown, IcnMenu as Menu, IcnUser as User, IcnWarning as AlertTriangle, IcnBarChart as BarChart3, IcnActivity as Activity, IcnTrendUp as TrendingUp,
+  IcnCheckCircle as ShieldCheck, IcnScale as Scale, IcnBank as Bank, IcnSmartphone as Smartphone, IcnChevronRight as ChevronRight,
+} from '@/components/ui/Icons';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import ToastProvider from './components/common/Toast';
 import { ThemeProvider } from './components/ThemeProvider';
@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 import { Badge } from './components/ui/badge';
 import { cn } from './lib/utils';
 import { formatRelativeTime } from './utils/designTokens';
+import { toast } from 'sonner';
 import type { PageType } from './types';
 
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -271,7 +272,7 @@ function NotificationBell() {
 function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -360,7 +361,7 @@ function AppLayout() {
                 <DropdownMenuItem onClick={() => navigate('/settings')}>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive" onClick={() => alert('Logged out')}>Log out</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive" onClick={() => { logout(); navigate('/login'); toast.success('Logged out successfully'); }}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

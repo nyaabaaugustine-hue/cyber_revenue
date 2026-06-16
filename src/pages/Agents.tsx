@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Search, LayoutGrid, List, UserPlus, TrendingUp, Star, Users, MapPin, Phone, Calendar } from "lucide-react";
+import { IcnSearch as Search, IcnGrid as LayoutGrid, IcnList as List, IcnPlus as UserPlus, IcnTrendUp as TrendingUp, IcnStar as Star, IcnUsers as Users, IcnMapPin as MapPin, IcnPhone as Phone, IcnCalendar as Calendar } from "@/components/ui/Icons";
+import { useNavigate } from "react-router-dom";
 import { agentStats, formatCurrency, formatDate } from "../utils/data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -43,6 +45,7 @@ function initials(name: string) {
 
 export function Agents() {
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedAgent, setSelectedAgent] = useState<typeof agentStats[number] | null>(null);
 
@@ -66,7 +69,7 @@ export function Agents() {
           <h2 className="text-2xl font-bold tracking-tight">Agent Management</h2>
           <p className="text-sm text-muted-foreground">{filtered.length} agents registered</p>
         </div>
-        <Button>
+        <Button onClick={() => toast.success('Agent creation form opened')}>
           <UserPlus className="mr-2 h-4 w-4" />
           Add Agent
         </Button>

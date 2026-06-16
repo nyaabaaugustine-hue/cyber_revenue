@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Search, Layers, MapPin, Users, Activity, X, Building2, Phone, Clock, List, Grid3X3, Navigation } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { IcnSearch as Search, IcnLayers as Layers, IcnMapPin as MapPin, IcnUsers as Users, IcnActivity as Activity, IcnX as X, IcnBuilding as Building2, IcnPhone as Phone, IcnClock as Clock, IcnList as List, IcnGrid as Grid3X3, IcnNav as Navigation } from "@/components/ui/Icons";
 import { MapView } from "../components/MapView";
 import { businesses, agentStats, zones, formatCurrency } from "../utils/data";
 import { Business, AgentStats } from "../types";
@@ -43,6 +44,21 @@ export function LiveMap() {
   const [selectedAgent, setSelectedAgent] = useState<AgentStats | null>(null);
   const [flyToLocation, setFlyToLocation] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
   const [hoveredBusinessId, setHoveredBusinessId] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+
+  // Handle navigation from Businesses page with ?business=XXX&lat=...&lng=...
+  useEffect(() => {
+    const bizId = searchParams.get('business');
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+    if (bizId && lat && lng) {
+      const biz = businesses.find(b => b.businessId === bizId);
+      if (biz) {
+        setSelectedBusiness(biz);
+        setFlyToLocation({ lat: parseFloat(lat), lng: parseFloat(lng), zoom: 18 });
+      }
+    }
+  }, [searchParams]);
 
   const filteredBusinesses = businesses.filter((b) => {
     const matchesZone = selectedZone === "all" || b.zoneId === selectedZone;

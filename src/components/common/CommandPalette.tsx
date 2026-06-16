@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Command } from 'cmdk';
-import { Search, Home, Building2, Users, DollarSign, FileText, Map, Settings, X, ChevronRight } from 'lucide-react';
+import { IcnSearch as Search, IcnHome as Home, IcnBuilding as Building2, IcnUsers as Users, IcnDollar as DollarSign, IcnFile as FileText, IcnMap as Map, IcnSettings as Settings, IcnX as X, IcnChevronRight as ChevronRight } from '@/components/ui/Icons';
 
 interface CommandPaletteProps {
   open: boolean;

@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle, Info, AlertCircle, RefreshCw } from 'lucide-react';
+import { IcnWarning as AlertTriangle, IcnCheckCircle as CheckCircle, IcnInfo as Info, IcnAlertCircle as AlertCircle, IcnRefresh as RefreshCw } from '@/components/ui/Icons';
 
 export function AlertPatterns() {
   const alerts = [

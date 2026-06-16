@@ -1,4 +1,4 @@
-import { Bell, Search, ChevronDown, Menu } from "lucide-react";
+import { IcnBell as Bell, IcnSearch as Search, IcnChevronDown as ChevronDown, IcnMenu as Menu } from "@/components/ui/Icons";
 import type { PageType } from "../types";
 
 interface HeaderProps {

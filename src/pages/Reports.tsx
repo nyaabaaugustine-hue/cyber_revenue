@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Download, TrendingUp, Users, DollarSign, FileText } from "lucide-react";
+import { IcnDownload as Download, IcnTrendUp as TrendingUp, IcnUsers as Users, IcnDollar as DollarSign, IcnFile as FileText } from "@/components/ui/Icons";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -71,7 +72,7 @@ export function Reports() {
               <TabsTrigger value="monthly">Monthly</TabsTrigger>
             </TabsList>
           </Tabs>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => toast.success('Report exported as PDF')}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -229,7 +230,7 @@ export function Reports() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Agent Performance Ranking</CardTitle>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => toast.success('Agent performance report exported as CSV')}>
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>

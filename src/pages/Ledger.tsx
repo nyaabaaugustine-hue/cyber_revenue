@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import {
-  TrendingUp, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight,
-  FileText, Calendar, Download, Filter, Search,
-} from 'lucide-react';
+  IcnTrendUp as TrendingUp, IcnTrendDown as TrendingDown, IcnDollar as DollarSign, IcnArrowUpRight as ArrowUpRight, IcnArrowDownRight as ArrowDownRight,
+  IcnFile as FileText, IcnCalendar as Calendar, IcnDownload as Download, IcnFilter as Filter, IcnSearch as Search,
+} from '@/components/ui/Icons';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/ui/sheet';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { formatCurrency, formatDate } from '../utils/data';
+import { toast } from "sonner";
 
 const mockLedger: LedgerEntry[] = Array.from({ length: 25 }, (_, i) => ({
   id: `ledger-${i}`,
@@ -109,7 +110,7 @@ export function Ledger() {
           <p className="text-sm text-muted-foreground">Chart of accounts and transaction history</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2" />Export</Button>
+          <Button variant="outline" size="sm" onClick={() => toast.success('Ledger exported as CSV')}><Download className="w-4 h-4 mr-2" />Export</Button>
         </div>
       </div>
 
@@ -172,7 +173,7 @@ export function Ledger() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Search entries..." className="pl-9" />
             </div>
-            <Button variant="outline" size="sm"><Filter className="w-4 h-4 mr-2" />Filter</Button>
+            <Button variant="outline" size="sm" onClick={() => toast.info('Filter panel opened')}><Filter className="w-4 h-4 mr-2" />Filter</Button>
           </div>
           <div className="rounded-md border">
             <Table>
@@ -258,8 +259,8 @@ export function Ledger() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Search invoices..." className="pl-9" />
             </div>
-            <Button variant="outline" size="sm"><Filter className="w-4 h-4 mr-2" />Status</Button>
-            <Button size="sm"><FileText className="w-4 h-4 mr-2" />New Invoice</Button>
+            <Button variant="outline" size="sm" onClick={() => toast.info('Status filter opened')}><Filter className="w-4 h-4 mr-2" />Status</Button>
+            <Button size="sm" onClick={() => toast.success('New invoice form opened')}><FileText className="w-4 h-4 mr-2" />New Invoice</Button>
           </div>
           <div className="rounded-md border">
             <Table>

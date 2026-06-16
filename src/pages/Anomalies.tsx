@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, AlertTriangle, AlertCircle, Info, CheckCircle2 } from "lucide-react";
+import { IcnSearch as Search, IcnWarning as AlertTriangle, IcnAlertCircle as AlertCircle, IcnInfo as Info, IcnCheckCircle2 as CheckCircle2 } from "@/components/ui/Icons";
 import { anomalies, formatDate } from "../utils/data";
 import { Anomaly } from "../types";
 import { Button } from "@/components/ui/button";

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { IcnTrendUp as TrendingUp, IcnTrendDown as TrendingDown } from "@/components/ui/Icons";
 
 interface StatsCardProps {
   title: string;

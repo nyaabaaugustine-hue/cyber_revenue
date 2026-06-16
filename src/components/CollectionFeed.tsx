@@ -1,5 +1,5 @@
 import { Collection } from "../types";
-import { ArrowRight, DollarSign } from "lucide-react";
+import { IcnArrowRight as ArrowRight, IcnDollar as DollarSign } from "@/components/ui/Icons";
 
 interface CollectionFeedProps {
   collections: Collection[];

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { User, UserRole } from '../types';
-import { currentUser } from './data';
+import { users, getUserByEmail, currentUser } from './data';
 
 interface AuthContextType {
   user: User | null;
@@ -8,6 +8,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
+  availableUsers: User[];
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,9 +17,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(currentUser);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate login
     if (email && password) {
-      setUser(currentUser);
+      const matched = getUserByEmail(email);
+      if (matched) {
+        setUser(matched);
+      } else {
+        setUser({ ...currentUser, email });
+      }
       return true;
     }
     return false;
@@ -29,13 +34,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const switchRole = (role: UserRole) => {
-    if (user) {
+    const roleUser = users.find(u => u.role === role);
+    if (roleUser) {
+      setUser(roleUser);
+    } else if (user) {
       setUser({ ...user, role });
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, switchRole }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, switchRole, availableUsers: users }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { Search, Plus, Phone, MapPin, Clock, Building2, User, DollarSign, FileText } from "lucide-react";
+import { IcnSearch as Search, IcnPlus as Plus, IcnPhone as Phone, IcnMapPin as MapPin, IcnClock as Clock, IcnBuilding as Building2, IcnUser as User, IcnDollar as DollarSign, IcnFile as FileText, IcnNav as Navigation } from "@/components/ui/Icons";
+import { useNavigate } from "react-router-dom";
 import { businesses, formatDate } from "../utils/data";
+import { useAuth } from "../utils/AuthContext";
+import { hasPermission } from "../utils/permissions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +33,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { toast } from "sonner";
 
 const statusVariant: Record<string, "success" | "secondary" | "warning" | "destructive"> = {
   active: "success",
@@ -47,6 +51,8 @@ const levyVariant: Record<string, "success" | "warning" | "destructive" | "secon
 };
 
 export function Businesses() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -59,6 +65,15 @@ export function Businesses() {
     const matchesStatus = statusFilter === "all" || b.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handleRegister = () => {
+    toast.success('Business registered successfully');
+    setDialogOpen(false);
+  };
+
+  const handleViewOnMap = (b: typeof businesses[number]) => {
+    navigate(`/map?business=${b.businessId}&lat=${b.location.lat}&lng=${b.location.lng}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -137,10 +152,8 @@ export function Businesses() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">Register Business</Button>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" onClick={handleRegister}>Register Business</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -157,9 +170,7 @@ export function Businesses() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <Label htmlFor="status-filter" className="text-sm text-muted-foreground sr-only">
-            Status
-          </Label>
+          <Label htmlFor="status-filter" className="text-sm text-muted-foreground sr-only">Status</Label>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger id="status-filter" className="w-[160px]">
               <SelectValue placeholder="All statuses" />
@@ -186,22 +197,16 @@ export function Businesses() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <CardTitle className="text-base">{business.name}</CardTitle>
-                  <p className="text-xs font-mono text-muted-foreground">
-                    {business.businessId}
-                  </p>
+                  <p className="text-xs font-mono text-muted-foreground">{business.businessId}</p>
                 </div>
-                <Badge variant={statusVariant[business.status]}>
-                  {business.status}
-                </Badge>
+                <Badge variant={statusVariant[business.status]}>{business.status}</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-3 pt-0">
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Building2 className="h-4 w-4 shrink-0" />
-                  <span className="font-medium text-foreground">
-                    {business.ownerName}
-                  </span>
+                  <span className="font-medium text-foreground">{business.ownerName}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Phone className="h-4 w-4 shrink-0" />
@@ -220,9 +225,14 @@ export function Businesses() {
               </div>
               <div className="flex items-center justify-between pt-2 border-t text-xs text-muted-foreground">
                 <span className="font-mono">{business.zoneName}</span>
-                <Button variant="ghost" size="sm">
-                  View Details
-                </Button>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleViewOnMap(business); }}>
+                    <Navigation className="w-3 h-3 mr-1" />Map
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setSelectedBusiness(business); }}>
+                    View Details
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -266,6 +276,12 @@ export function Businesses() {
                     )}
                   </div>
                 </div>
+              </div>
+              <div className="flex gap-2">
+                <Button className="flex-1" onClick={() => handleViewOnMap(selectedBusiness)}>
+                  <Navigation className="w-4 h-4 mr-2" />
+                  View on Map
+                </Button>
               </div>
               <Separator />
               <div className="space-y-3">

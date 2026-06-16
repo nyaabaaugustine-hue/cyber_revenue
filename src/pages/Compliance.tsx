@@ -12,7 +12,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { ShieldCheck, ShieldAlert, ShieldX, ClipboardCheck, AlertTriangle } from "lucide-react";
+import { IcnCheckCircle as ShieldCheck, IcnShieldAlert as ShieldAlert, IcnShieldX as ShieldX, IcnClipboardCheck as ClipboardCheck, IcnWarning as AlertTriangle } from "@/components/ui/Icons";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger,
 } from "@/components/ui/sheet";

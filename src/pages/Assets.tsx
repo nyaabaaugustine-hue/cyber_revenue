@@ -11,7 +11,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Smartphone, Monitor, Printer, Shirt, CreditCard, Package, CheckCircle2, AlertTriangle } from "lucide-react";
+import { IcnSmartphone as Smartphone, IcnMonitor as Monitor, IcnPrinter as Printer, IcnShirt as Shirt, IcnCreditCard as CreditCard, IcnPackage as Package, IcnCheckCircle2 as CheckCircle2, IcnWarning as AlertTriangle } from "@/components/ui/Icons";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger,
 } from "@/components/ui/sheet";

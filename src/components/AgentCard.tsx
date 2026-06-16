@@ -1,5 +1,5 @@
 import { AgentStats } from "../types";
-import { MapPin, DollarSign, TrendingUp } from "lucide-react";
+import { IcnMapPin as MapPin, IcnDollar as DollarSign, IcnTrendUp as TrendingUp } from "@/components/ui/Icons";
 
 interface AgentCardProps {
   agent: AgentStats;

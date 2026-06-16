@@ -1,16 +1,15 @@
 import { 
-  LayoutDashboard, 
-  Map, 
-  Building2, 
-  Users, 
-  DollarSign, 
-  FileText,
-  Settings,
-  Shield,
-  ChevronLeft,
-  UserCircle,
-  Users as UsersIcon
-} from "lucide-react";
+  IcnDashboard as LayoutDashboard, 
+  IcnMap as Map, 
+  IcnBuilding as Building2, 
+  IcnUsers as Users, 
+  IcnDollar as DollarSign, 
+  IcnFile as FileText,
+  IcnSettings as Settings,
+  IcnShield as Shield,
+  IcnChevronLeft as ChevronLeft,
+  IcnUsers as UsersIcon
+} from "@/components/ui/Icons";
 import type { PageType } from "../types";
 import { useAuth } from "../utils/AuthContext";
 import { hasPermission } from "../utils/permissions";

@@ -468,6 +468,20 @@ export interface ReconciliationEntry {
   notes: string;
 }
 
+// Due Collection
+export interface DueCollection {
+  id: string;
+  businessId: string;
+  businessName: string;
+  amountDue: number;
+  dueDate: string;
+  daysOverdue: number;
+  status: 'due' | 'overdue' | 'partial';
+  zone: string;
+  ownerName: string;
+  ownerPhone: string;
+}
+
 // Asset
 export interface Asset {
   id: string;

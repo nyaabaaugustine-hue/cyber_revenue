@@ -1,4 +1,4 @@
-import { User, MapPin, TrendingUp } from 'lucide-react';
+import { IcnUser as User, IcnMapPin as MapPin, IcnTrendUp as TrendingUp } from '@/components/ui/Icons';
 import { AgentStats } from '../types';
 import { formatCurrency } from '../utils/designTokens';
 

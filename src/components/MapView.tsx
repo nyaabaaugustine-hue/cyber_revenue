@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Layers, X, User, Phone, Clock, DollarSign, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { IcnLayers as Layers, IcnX as X, IcnUser as User, IcnPhone as Phone, IcnClock as Clock, IcnDollar as DollarSign, IcnWarning as AlertTriangle, IcnCheckCircle2 as CheckCircle2 } from '@/components/ui/Icons';
 import { Business, AgentStats } from '../types';
 import { formatCurrency, formatRelativeTime } from '../utils/designTokens';
 

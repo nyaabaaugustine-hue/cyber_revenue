@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Scale, AlertCircle, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { IcnScale as Scale, IcnAlertCircle as AlertCircle, IcnCheckCircle2 as CheckCircle2, IcnClock as Clock, IcnX as XCircle } from "@/components/ui/Icons";
 
 const statusConfig: Record<string, { badge: "default" | "secondary" | "destructive" | "outline"; icon: React.ElementType }> = {
   open: { badge: "destructive", icon: AlertCircle },

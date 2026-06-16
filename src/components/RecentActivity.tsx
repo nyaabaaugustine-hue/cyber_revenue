@@ -1,4 +1,4 @@
-import { Clock, User, Building2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { IcnClock as Clock, IcnUser as User, IcnBuilding as Building2, IcnCheckCircle as CheckCircle, IcnWarning as AlertTriangle } from '@/components/ui/Icons';
 import { Collection, Anomaly } from '../types';
 import { formatCurrency, formatRelativeTime } from '../utils/designTokens';
 
