@@ -1,0 +1,326 @@
+import { useState } from "react";
+import { Search, Plus, Phone, MapPin, Clock, Building2, User, DollarSign, FileText } from "lucide-react";
+import { businesses, formatDate } from "../utils/data";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+
+const statusVariant: Record<string, "success" | "secondary" | "warning" | "destructive"> = {
+  active: "success",
+  inactive: "secondary",
+  flagged: "warning",
+  closed: "destructive",
+};
+
+const levyVariant: Record<string, "success" | "warning" | "destructive" | "secondary"> = {
+  paid: "success",
+  due: "warning",
+  overdue: "destructive",
+  partial: "warning",
+  waived: "secondary",
+};
+
+export function Businesses() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedBusiness, setSelectedBusiness] = useState<typeof businesses[number] | null>(null);
+
+  const filteredBusinesses = businesses.filter((b) => {
+    const matchesSearch =
+      b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.businessId.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || b.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Business Registry</h2>
+          <p className="text-sm text-muted-foreground">
+            {filteredBusinesses.length} businesses found
+          </p>
+        </div>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4" />
+              Register Business
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Register New Business</DialogTitle>
+              <DialogDescription>
+                Fill in the details to register a new business in the district.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Business Name</Label>
+                <Input id="name" placeholder="e.g. Makola Trading Ventures" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="ownerName">Owner Name</Label>
+                  <Input id="ownerName" placeholder="Full name" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="ownerPhone">Phone Number</Label>
+                  <Input id="ownerPhone" placeholder="+233 XX XXX XXXX" />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="location">Location Description</Label>
+                <Input id="location" placeholder="e.g. Near Kejetia Market, Block C" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select>
+                    <SelectTrigger id="category">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="trading">Trading</SelectItem>
+                      <SelectItem value="food-beverage">Food & Beverage</SelectItem>
+                      <SelectItem value="electronics">Electronics</SelectItem>
+                      <SelectItem value="pharmaceuticals">Pharmaceuticals</SelectItem>
+                      <SelectItem value="services">Services</SelectItem>
+                      <SelectItem value="fashion">Fashion & Textiles</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="zone">Zone</Label>
+                  <Select>
+                    <SelectTrigger id="zone">
+                      <SelectValue placeholder="Select zone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="zone-a">Zone A - Central</SelectItem>
+                      <SelectItem value="zone-b">Zone B - Adum</SelectItem>
+                      <SelectItem value="zone-c">Zone C - Bantama</SelectItem>
+                      <SelectItem value="zone-d">Zone D - Suame</SelectItem>
+                      <SelectItem value="zone-e">Zone E - Tafo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Register Business</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="relative flex-1 min-w-[280px]">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by name or ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="status-filter" className="text-sm text-muted-foreground sr-only">
+            Status
+          </Label>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger id="status-filter" className="w-[160px]">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="flagged">Flagged</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredBusinesses.map((business) => (
+          <Card
+            key={business.id}
+            className="hover:shadow-md transition-shadow cursor-pointer"
+            onClick={() => setSelectedBusiness(business)}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <CardTitle className="text-base">{business.name}</CardTitle>
+                  <p className="text-xs font-mono text-muted-foreground">
+                    {business.businessId}
+                  </p>
+                </div>
+                <Badge variant={statusVariant[business.status]}>
+                  {business.status}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-0">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Building2 className="h-4 w-4 shrink-0" />
+                  <span className="font-medium text-foreground">
+                    {business.ownerName}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="h-4 w-4 shrink-0" />
+                  <span>{business.ownerPhone}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{business.locationDescription}</span>
+                </div>
+                {business.lastVisitedAt && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Clock className="h-4 w-4 shrink-0" />
+                    <span>Last visited: {formatDate(business.lastVisitedAt)}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t text-xs text-muted-foreground">
+                <span className="font-mono">{business.zoneName}</span>
+                <Button variant="ghost" size="sm">
+                  View Details
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Sheet open={!!selectedBusiness} onOpenChange={(open) => { if (!open) setSelectedBusiness(null); }}>
+        <SheetContent side="right" className="w-full sm:max-w-lg">
+          <SheetHeader>
+            <SheetTitle>{selectedBusiness?.name}</SheetTitle>
+            <SheetDescription>{selectedBusiness?.businessId}</SheetDescription>
+          </SheetHeader>
+          {selectedBusiness && (
+            <div className="mt-6 space-y-5">
+              <div className="flex items-center gap-2 text-sm">
+                <Badge variant={statusVariant[selectedBusiness.status]}>{selectedBusiness.status}</Badge>
+                <Badge variant={levyVariant[selectedBusiness.levyStatus]}>Levy: {selectedBusiness.levyStatus}</Badge>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div>
+                    <p className="text-muted-foreground text-xs">Owner</p>
+                    <p className="font-medium">{selectedBusiness.ownerName}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div>
+                    <p className="text-muted-foreground text-xs">Phone</p>
+                    <p className="font-medium">{selectedBusiness.ownerPhone}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div>
+                    <p className="text-muted-foreground text-xs">Location</p>
+                    <p className="font-medium">{selectedBusiness.location.lat.toFixed(4)}, {selectedBusiness.location.lng.toFixed(4)}</p>
+                    {selectedBusiness.locationDescription && (
+                      <p className="text-xs text-muted-foreground">{selectedBusiness.locationDescription}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <Separator />
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <DollarSign className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div>
+                    <p className="text-muted-foreground text-xs">Total Outstanding</p>
+                    <p className="font-medium">GHS {selectedBusiness.totalOutstanding.toLocaleString()}</p>
+                  </div>
+                </div>
+                {selectedBusiness.lastPaymentDate && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div>
+                      <p className="text-muted-foreground text-xs">Last Payment</p>
+                      <p className="font-medium">{formatDate(selectedBusiness.lastPaymentDate)}</p>
+                      {selectedBusiness.lastAmountPaid != null && (
+                        <p className="text-xs text-muted-foreground">GHS {selectedBusiness.lastAmountPaid.toLocaleString()}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <Separator />
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div>
+                    <p className="text-muted-foreground text-xs">Registered by</p>
+                    <p className="font-medium">{selectedBusiness.registeredByName || selectedBusiness.registeredBy}</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(selectedBusiness.registeredAt)}</p>
+                  </div>
+                </div>
+                {selectedBusiness.notes && (
+                  <div className="flex items-start gap-3 text-sm">
+                    <FileText className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-muted-foreground text-xs">Notes</p>
+                      <p className="text-sm">{selectedBusiness.notes}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {filteredBusinesses.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+          <Building2 className="h-12 w-12 mb-4" />
+          <p className="text-lg font-medium">No businesses found</p>
+          <p className="text-sm">Try adjusting your search or filters.</p>
+        </div>
+      )}
+    </div>
+  );
+}
