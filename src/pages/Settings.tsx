@@ -21,7 +21,7 @@ export function Settings() {
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("general");
   const { data: businessesData } = useBusinesses({ limit: 100 });
-  const businesses = businessesData?.data ?? [];
+  const businesses = businessesData ?? [];
 
   if (!hasPermission(user?.role || "admin", "settings", "view")) {
     return (

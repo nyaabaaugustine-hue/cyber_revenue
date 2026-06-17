@@ -40,6 +40,13 @@ export const listZones = async (_req: Request, res: Response, next: NextFunction
 export const listCategories = async (_req: Request, res: Response, next: NextFunction) => {
   try { successResponse(res, await businessService.listCategories()); } catch (e) { next(e); }
 };
+export const getCollectionsByBusiness = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await businessService.getCollectionsByBusiness(req.params.id);
+    successResponse(res, data);
+  } catch (e) { next(e); }
+};
+
 export const listDistricts = async (_req: Request, res: Response, next: NextFunction) => {
   try { successResponse(res, await businessService.listDistricts()); } catch (e) { next(e); }
 };

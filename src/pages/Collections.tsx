@@ -26,7 +26,7 @@ export function Collections() {
   const [dateFilter, setDateFilter] = useState("all");
 
   const { data: collectionsData, isLoading: collectionsLoading } = useCollections({ page: 1, limit: 100 });
-  const collections = collectionsData?.data ?? [];
+  const collections = collectionsData ?? [];
   const { data: dueCollections, isLoading: dueLoading } = useDueCollections();
   const dueCollectionsList = dueCollections ?? [];
 

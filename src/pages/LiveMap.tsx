@@ -50,7 +50,7 @@ export function LiveMap() {
   const [searchParams] = useSearchParams();
   const token = useAuthStore(s => s.token);
   const { data: businessesData } = useBusinesses({ limit: 100 });
-  const businesses = businessesData?.data ?? [];
+  const businesses = businessesData ?? [];
   const { data: zonesData = [] } = useZones();
   const zones = zonesData;
 

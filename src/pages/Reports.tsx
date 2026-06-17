@@ -46,7 +46,7 @@ export function Reports() {
   const { data: trends = [] } = useRevenueTrends();
   const { data: categories = [] } = useCategoryBreakdown();
   const { data: agentsData } = useAgents();
-  const agents = agentsData?.data ?? [];
+  const agents = agentsData ?? [];
 
   if (!metrics) {
     return (

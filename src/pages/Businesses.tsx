@@ -63,7 +63,7 @@ export function Businesses() {
   const [formPhoto, setFormPhoto] = useState("");
 
   const { data: businessesData, isLoading } = useBusinesses({ limit: 100 });
-  const allBusinesses = businessesData?.data || [];
+  const allBusinesses = businessesData || [];
 
   const filteredBusinesses = allBusinesses.filter((b) => {
     const matchesSearch =

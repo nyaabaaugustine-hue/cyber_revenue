@@ -39,8 +39,8 @@ export function Dashboard() {
   const { data: alerts = [], isLoading: loadingAlerts } = useAlerts();
   const { data: businessesData, isLoading: loadingBusinesses } = useBusinesses({ limit: 50 });
 
-  const collections = collectionsData?.data || [];
-  const businesses = businessesData?.data || [];
+  const collections = collectionsData || [];
+  const businesses = businessesData || [];
   const agentList = Array.isArray(agents) ? agents : [];
 
   const role = user?.role || 'admin';

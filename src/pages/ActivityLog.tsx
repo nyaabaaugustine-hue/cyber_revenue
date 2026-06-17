@@ -119,8 +119,8 @@ export function ActivityLog() {
   const { data: apiEntries, isLoading } = useActivityLog({ page: 1, limit: 100 });
 
   useEffect(() => {
-    if (apiEntries?.data && apiEntries.data.length > 0) {
-      const mapped: ActivityEntry[] = apiEntries.data.map((e: any) => ({
+    if (apiEntries && Array.isArray(apiEntries) && apiEntries.length > 0) {
+      const mapped: ActivityEntry[] = apiEntries.map((e: any) => ({
         id: e.id,
         timestamp: e.timestamp || e.createdAt,
         actorId: e.actorId,

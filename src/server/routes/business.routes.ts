@@ -11,6 +11,7 @@ router.get('/zones', bizCtrl.listZones);
 router.get('/categories', bizCtrl.listCategories);
 router.get('/districts', bizCtrl.listDistricts);
 router.get('/:id', bizCtrl.getById);
+router.get('/:id/collections', bizCtrl.getCollectionsByBusiness);
 router.post('/', validate([
   { field: 'name', type: 'string', required: true },
   { field: 'ownerName', type: 'string', required: true },

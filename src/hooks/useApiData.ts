@@ -56,6 +56,20 @@ export interface DashboardMetricsFlat {
   agentsAvgPerformance: string;
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function transformBusiness(b: any): Business {
+  const { lat, lng, ...rest } = b;
+  return {
+    ...rest,
+    location: { lat: Number(lat) || 0, lng: Number(lng) || 0 },
+    totalOutstanding: Number(rest.totalOutstanding) || 0,
+    lastAmountPaid: rest.lastAmountPaid != null ? Number(rest.lastAmountPaid) : null,
+    totalCollected: rest.totalCollected != null ? Number(rest.totalCollected) : undefined,
+    lastCollectionAmount: rest.lastCollectionAmount != null ? Number(rest.lastCollectionAmount) : undefined,
+  };
+}
+
 // ─── Analytics ───────────────────────────────────────────────────────────────
 
 export const useDashboardMetrics = () => {
@@ -96,10 +110,7 @@ export const useActivityLog = (params?: { page?: number; limit?: number }) => {
   return useQuery({
     queryKey: ['activity-log', params],
     queryFn: async () => {
-      const response = await api.get<{ data: ActivityEntry[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(
-        '/analytics/activity',
-        params,
-      );
+      const response = await api.get<ActivityEntry[]>('/analytics/activity', params);
       return response.data;
     },
     staleTime: 1000 * 60,
@@ -118,10 +129,7 @@ export const useCollections = (params?: {
   return useQuery({
     queryKey: ['collections', params],
     queryFn: async () => {
-      const response = await api.get<{ data: Collection[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(
-        '/collections',
-        params,
-      );
+      const response = await api.get<Collection[]>('/collections', params);
       return response.data;
     },
     staleTime: 1000 * 60,
@@ -169,11 +177,8 @@ export const useBusinesses = (params?: {
   return useQuery({
     queryKey: ['businesses', params],
     queryFn: async () => {
-      const response = await api.get<{ data: Business[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(
-        '/businesses',
-        params,
-      );
-      return response.data;
+      const response = await api.get<any[]>('/businesses', params);
+      return (response.data || []).map(transformBusiness);
     },
     staleTime: 1000 * 60,
     placeholderData: (previousData) => previousData,
@@ -184,11 +189,23 @@ export const useBusiness = (id: string, enabled = true) => {
   return useQuery({
     queryKey: ['business', id],
     queryFn: async () => {
-      const response = await api.get<Business>(`/businesses/${id}`);
-      return response.data;
+      const response = await api.get<any>(`/businesses/${id}`);
+      return transformBusiness(response.data);
     },
     enabled: enabled && !!id,
     staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useBusinessCollections = (businessId: string, enabled = true) => {
+  return useQuery({
+    queryKey: ['business-collections', businessId],
+    queryFn: async () => {
+      const response = await api.get<Collection[]>(`/businesses/${businessId}/collections`);
+      return response.data;
+    },
+    enabled: enabled && !!businessId,
+    staleTime: 1000 * 60,
   });
 };
 
@@ -220,10 +237,7 @@ export const useAgents = (params?: { page?: number; limit?: number; search?: str
   return useQuery({
     queryKey: ['agents', params],
     queryFn: async () => {
-      const response = await api.get<{ data: AgentStats[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(
-        '/agents',
-        params,
-      );
+      const response = await api.get<AgentStats[]>('/agents', params);
       return response.data;
     },
     staleTime: 1000 * 60,
@@ -318,10 +332,7 @@ export const useDisputes = (params?: { page?: number; limit?: number; status?: s
   return useQuery({
     queryKey: ['disputes', params],
     queryFn: async () => {
-      const response = await api.get<{ data: Dispute[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(
-        '/management/disputes',
-        params,
-      );
+      const response = await api.get<Dispute[]>('/management/disputes');
       return response.data;
     },
     staleTime: 1000 * 60,
@@ -349,10 +360,7 @@ export const useComplianceChecks = (params?: { page?: number; limit?: number; st
   return useQuery({
     queryKey: ['compliance-checks', params],
     queryFn: async () => {
-      const response = await api.get<{ data: ComplianceCheck[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(
-        '/management/compliance',
-        params,
-      );
+      const response = await api.get<ComplianceCheck[]>('/management/compliance');
       return response.data;
     },
     staleTime: 1000 * 60,
@@ -366,10 +374,7 @@ export const useCommissions = (params?: { page?: number; limit?: number; officer
   return useQuery({
     queryKey: ['commissions', params],
     queryFn: async () => {
-      const response = await api.get<{ data: CommissionEntry[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(
-        '/management/commissions',
-        params,
-      );
+      const response = await api.get<CommissionEntry[]>('/management/commissions');
       return response.data;
     },
     staleTime: 1000 * 60,
@@ -383,10 +388,7 @@ export const useReconciliation = (params?: { page?: number; limit?: number; stat
   return useQuery({
     queryKey: ['reconciliation', params],
     queryFn: async () => {
-      const response = await api.get<{ data: ReconciliationEntry[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(
-        '/management/reconciliation',
-        params,
-      );
+      const response = await api.get<ReconciliationEntry[]>('/management/reconciliation');
       return response.data;
     },
     staleTime: 1000 * 60,
@@ -400,10 +402,7 @@ export const useAssets = (params?: { page?: number; limit?: number; type?: strin
   return useQuery({
     queryKey: ['assets', params],
     queryFn: async () => {
-      const response = await api.get<{ data: Asset[]; meta: { total: number; page: number; limit: number; totalPages: number } }>(
-        '/resources/assets',
-        params,
-      );
+      const response = await api.get<Asset[]>('/resources/assets');
       return response.data;
     },
     staleTime: 1000 * 60,

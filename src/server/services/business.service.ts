@@ -1,6 +1,6 @@
 import { db } from '../../db/index.js';
-import { businesses, categories, zones, districts } from '../../db/schema/index.js';
-import { eq, ilike, and, desc, count, sql } from 'drizzle-orm';
+import { businesses, categories, zones, districts, collections } from '../../db/schema/index.js';
+import { eq, ilike, and, desc, count } from 'drizzle-orm';
 import { AppError } from '../middleware/error.middleware.js';
 
 export const list = async ({ page = 1, limit = 20, search, status, zoneId, categoryId }: {
@@ -21,6 +21,13 @@ export const getById = async (id: string) => {
   const [biz] = await db.select().from(businesses).where(eq(businesses.id, id));
   if (!biz) throw new AppError('Business not found', 404);
   return biz;
+};
+
+export const getCollectionsByBusiness = async (businessId: string) => {
+  const data = await db.select().from(collections)
+    .where(eq(collections.businessId, businessId))
+    .orderBy(desc(collections.collectionDate));
+  return data;
 };
 
 export const create = async (body: any) => {

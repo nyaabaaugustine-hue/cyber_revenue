@@ -23,7 +23,7 @@ export function Users() {
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const { data: usersData = [], isLoading: usersLoading } = useUsers();
   const { data: agentsData } = useAgents();
-  const agentStats = agentsData?.data ?? [];
+  const agentStats = agentsData ?? [];
 
   if (!hasPermission(currentUser?.role || "admin", "users", "view")) {
     return (
