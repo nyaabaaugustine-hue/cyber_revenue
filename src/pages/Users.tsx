@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IcnShield as Shield, IcnPlus as Plus, IcnSearch as Search, IcnMail as Mail, IcnEdit as Edit, IcnMoreV as MoreVertical } from "@/components/ui/Icons";
+import { IcnShield as Shield, IcnPlus as Plus, IcnSearch as Search, IcnMail as Mail, IcnEdit as Edit, IcnMoreV as MoreVertical, IcnUser as LoginAsIcon } from "@/components/ui/Icons";
 import { useAuth } from "../utils/AuthContext";
 import { hasPermission, roleLabels, roleBadgeStyles } from "../utils/permissions";
 import { users, agentStats, formatDate } from "../utils/data";
@@ -17,7 +17,7 @@ import { toast } from "sonner";
 
 export function Users() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, loginAs, stopImpersonation, isImpersonating } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
 
@@ -68,6 +68,20 @@ export function Users() {
 
   return (
     <div className="space-y-6">
+      {isImpersonating && (
+        <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+          <div className="flex items-center gap-2">
+            <LoginAsIcon className="w-4 h-4 text-indigo-400" />
+            <span className="text-sm text-indigo-300">
+              Viewing as <strong>{currentUser?.fullName}</strong> — Impersonating
+            </span>
+          </div>
+          <Button size="sm" variant="outline" onClick={() => { stopImpersonation(); toast.success('Stopped impersonation'); }}>
+            Stop Impersonation
+          </Button>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">User Management</h1>
@@ -175,6 +189,20 @@ export function Users() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
+                            {currentUser?.role === 'admin' && user.id !== currentUser?.id && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title={`Login as ${user.fullName}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  loginAs(user);
+                                  toast.success(`Now viewing as ${user.fullName}`);
+                                }}
+                              >
+                                <LoginAsIcon className="w-4 h-4 text-indigo-500" />
+                              </Button>
+                            )}
                             <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); window.open(`mailto:${user.email}`, '_blank'); }}>
                               <Mail className="w-4 h-4" />
                             </Button>

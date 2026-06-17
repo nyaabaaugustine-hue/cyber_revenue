@@ -1,7 +1,4 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { api, type PaginatedResponse } from "../api/client";
-import type { ActivityEntry } from "../types";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,28 +34,105 @@ const severityBadge: Record<string, "default" | "secondary" | "destructive" | "o
   error: "destructive",
 };
 
+interface ActivityEntry {
+  id: string;
+  timestamp: string;
+  actorId: string;
+  actorName: string;
+  actorRole: string;
+  action: string;
+  resourceType: string;
+  resourceId: string;
+  resourceName: string;
+  details: string;
+  severity: 'info' | 'warning' | 'error' | 'success';
+}
+
+const actors = [
+  { name: "Dr. Kwame Asante", role: "admin", id: "user-1" },
+  { name: "Mrs. Abena Yiadom", role: "supervisor", id: "user-2" },
+  { name: "Mr. John Mensah", role: "supervisor", id: "user-3" },
+  { name: "Ms. Esi Gyan", role: "accountant", id: "user-4" },
+  { name: "Mr. Kwabena Danso", role: "manager", id: "user-5" },
+  { name: "Mr. Kofi Appiah", role: "field_officer", id: "user-6" },
+];
+
+const actionTemplates = [
+  { action: "created", resource: "business", severity: "success" as const, details: (r: string) => `Registered new business "${r}" in Zone B - Adum` },
+  { action: "created", resource: "collection", severity: "success" as const, details: (r: string) => `Recorded collection of GHS ${(Math.random()*2000+50).toFixed(0)} for ${r}` },
+  { action: "updated", resource: "business", severity: "info" as const, details: (r: string) => `Updated business details for ${r}` },
+  { action: "verified", resource: "collection", severity: "success" as const, details: (r: string) => `GPS-verified collection receipt for ${r}` },
+  { action: "created", resource: "visit", severity: "info" as const, details: (r: string) => `Completed field visit to ${r}` },
+  { action: "approved", resource: "remittance", severity: "success" as const, details: (r: string) => `Approved cash remittance of GHS ${(Math.random()*5000+500).toFixed(0)} from ${r}` },
+  { action: "updated", resource: "agent", severity: "info" as const, details: (r: string) => `Updated agent profile for ${r}` },
+  { action: "rejected", resource: "dispute", severity: "warning" as const, details: (r: string) => `Dispute from ${r} rejected — insufficient evidence` },
+  { action: "resolved", resource: "anomaly", severity: "success" as const, details: (r: string) => `Resolved GPS mismatch anomaly for ${r}` },
+  { action: "created", resource: "invoice", severity: "info" as const, details: (r: string) => `Generated levy invoice for ${r}` },
+  { action: "updated", resource: "settings", severity: "info" as const, details: (_r: string) => `Updated commission rate from 5% to 7%` },
+  { action: "created", resource: "user", severity: "success" as const, details: (r: string) => `Created new user account for ${r}` },
+  { action: "verified", resource: "remittance", severity: "success" as const, details: (r: string) => `Verified bank remittance from ${r}` },
+  { action: "updated", resource: "zone", severity: "info" as const, details: (_r: string) => `Reassigned Zone C boundaries` },
+  { action: "created", resource: "collection", severity: "success" as const, details: (r: string) => `Recorded mobile money collection for ${r}` },
+];
+
+const resourceNames = [
+  "Adom Supermarket", "Amakom Pharmacy", "Kejetia Traders", "Asafo Hardware",
+  "Bantama Mart", "Suame Auto Parts", "Tafo Textiles", "Dichemso Grocers",
+  "Emmanuel Owusu", "Akua Mensah", "Kofi Asante", "Ama Boateng", "Yaw Darko",
+  "Makola Trading Ventures", "Ahodwo Hair Salon", "Nhyiaeso Restaurant",
+];
+
+let eventCounter = 0;
+
+function generateEvents(count: number, earlier = false): ActivityEntry[] {
+  return Array.from({ length: count }, (_, i) => {
+    const actor = actors[Math.floor(Math.random() * actors.length)];
+    const tpl = actionTemplates[Math.floor(Math.random() * actionTemplates.length)];
+    const resource = resourceNames[Math.floor(Math.random() * resourceNames.length)];
+    const now = new Date();
+    const offset = earlier
+      ? Math.floor(Math.random() * 86400000 * 3) + 3600000
+      : Math.floor(Math.random() * 3600000);
+    const ts = new Date(now.getTime() - offset);
+    eventCounter++;
+    return {
+      id: `evt-${eventCounter}`,
+      timestamp: ts.toISOString(),
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.role,
+      action: tpl.action,
+      resourceType: tpl.resource,
+      resourceId: `${tpl.resource}-${Math.floor(Math.random() * 200 + 1)}`,
+      resourceName: resource,
+      details: tpl.details(resource),
+      severity: tpl.severity,
+    };
+  }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+}
+
 export function ActivityLog() {
-  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
+  const [entries, setEntries] = useState<ActivityEntry[]>(() => generateEvents(40, true));
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["activity", page, search, actionFilter],
-    queryFn: () => api.get<PaginatedResponse<ActivityEntry>>("/api/v1/activity", {
-      page, limit: 25, actor: search || undefined, action: actionFilter !== "all" ? actionFilter : undefined,
-    }).then(r => r.data),
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newEvent = generateEvents(1);
+      setEntries(prev => [...newEvent, ...prev].slice(0, 200));
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filtered = entries.filter(e => {
+    const matchSearch = !search || e.actorName.toLowerCase().includes(search.toLowerCase()) || e.resourceName.toLowerCase().includes(search.toLowerCase());
+    const matchAction = actionFilter === "all" || e.action === actionFilter;
+    return matchSearch && matchAction;
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  const entries = data?.data || [];
-  const total = data?.meta?.total || 0;
+  const todayCount = entries.filter(e => new Date(e.timestamp).toDateString() === new Date().toDateString()).length;
+  const warningCount = entries.filter(e => e.severity === "warning").length;
+  const errorCount = entries.filter(e => e.severity === "error").length;
 
   return (
     <div className="space-y-6">
@@ -67,7 +141,7 @@ export function ActivityLog() {
           <h1 className="text-2xl font-bold">Activity Log</h1>
           <p className="text-sm text-muted-foreground">Real-time audit trail of all system actions</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+        <Button variant="outline" size="sm" onClick={() => setEntries(prev => [...generateEvents(5), ...prev])}>
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
@@ -78,47 +152,34 @@ export function ActivityLog() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Events</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{total}</p>
-          </CardContent>
+          <CardContent><p className="text-2xl font-bold">{entries.length}</p></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Today</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{entries.filter(e => new Date(e.timestamp).toDateString() === new Date().toDateString()).length}</p>
-          </CardContent>
+          <CardContent><p className="text-2xl font-bold">{todayCount}</p></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Warnings</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-amber-500">{entries.filter(e => e.severity === 'warning').length}</p>
-          </CardContent>
+          <CardContent><p className="text-2xl font-bold text-amber-500">{warningCount}</p></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Errors</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-red-500">{entries.filter(e => e.severity === 'error').length}</p>
-          </CardContent>
+          <CardContent><p className="text-2xl font-bold text-red-500">{errorCount}</p></CardContent>
         </Card>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <UserCheck className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Filter by actor name..."
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="pl-9"
-          />
+          <Input placeholder="Filter by actor name..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <Select value={actionFilter} onValueChange={v => { setActionFilter(v); setPage(1); }}>
+        <Select value={actionFilter} onValueChange={setActionFilter}>
           <SelectTrigger className="w-40">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue placeholder="Action" />
@@ -138,7 +199,7 @@ export function ActivityLog() {
       <Card>
         <CardContent className="p-0">
           <div className="divide-y">
-            {entries.map((entry) => {
+            {filtered.map((entry) => {
               const SevIcon = severityIcon[entry.severity] || Activity;
               return (
                 <Sheet key={entry.id}>
@@ -157,14 +218,10 @@ export function ActivityLog() {
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-xs text-muted-foreground">{entry.resourceName}</span>
                           <span className="text-xs text-muted-foreground">•</span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(entry.timestamp).toLocaleString()}
-                          </span>
+                          <span className="text-xs text-muted-foreground">{new Date(entry.timestamp).toLocaleString()}</span>
                         </div>
                       </div>
-                      <Badge variant={severityBadge[entry.severity]} className="shrink-0">
-                        {entry.severity}
-                      </Badge>
+                      <Badge variant={severityBadge[entry.severity]} className="shrink-0">{entry.severity}</Badge>
                     </div>
                   </SheetTrigger>
                   <SheetContent side="right" className="w-full sm:max-w-lg">
@@ -174,43 +231,16 @@ export function ActivityLog() {
                     </SheetHeader>
                     <div className="space-y-4 mt-6">
                       <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-xs text-muted-foreground font-medium">Actor</p>
-                          <p className="text-sm font-medium">{entry.actorName}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground font-medium">Role</p>
-                          <p className="text-sm">{entry.actorRole}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground font-medium">Action</p>
-                          <Badge variant="outline" className="mt-1">{entry.action}</Badge>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground font-medium">Severity</p>
-                          <Badge variant={severityBadge[entry.severity]} className="mt-1">{entry.severity}</Badge>
-                        </div>
+                        <div><p className="text-xs text-muted-foreground font-medium">Actor</p><p className="text-sm font-medium">{entry.actorName}</p></div>
+                        <div><p className="text-xs text-muted-foreground font-medium">Role</p><p className="text-sm">{entry.actorRole}</p></div>
+                        <div><p className="text-xs text-muted-foreground font-medium">Action</p><Badge variant="outline" className="mt-1">{entry.action}</Badge></div>
+                        <div><p className="text-xs text-muted-foreground font-medium">Severity</p><Badge variant={severityBadge[entry.severity]} className="mt-1">{entry.severity}</Badge></div>
                       </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium">Resource Type</p>
-                        <p className="text-sm">{entry.resourceType}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium">Resource ID</p>
-                        <p className="text-sm font-mono">{entry.resourceId}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium">Resource Name</p>
-                        <p className="text-sm">{entry.resourceName}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium">Timestamp</p>
-                        <p className="text-sm">{new Date(entry.timestamp).toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium">Details</p>
-                        <p className="text-sm text-muted-foreground bg-muted/50 rounded-md p-3">{entry.details}</p>
-                      </div>
+                      <div><p className="text-xs text-muted-foreground font-medium">Resource Type</p><p className="text-sm">{entry.resourceType}</p></div>
+                      <div><p className="text-xs text-muted-foreground font-medium">Resource ID</p><p className="text-sm font-mono">{entry.resourceId}</p></div>
+                      <div><p className="text-xs text-muted-foreground font-medium">Resource Name</p><p className="text-sm">{entry.resourceName}</p></div>
+                      <div><p className="text-xs text-muted-foreground font-medium">Timestamp</p><p className="text-sm">{new Date(entry.timestamp).toLocaleString()}</p></div>
+                      <div><p className="text-xs text-muted-foreground font-medium">Details</p><p className="text-sm text-muted-foreground bg-muted/50 rounded-md p-3">{entry.details}</p></div>
                     </div>
                   </SheetContent>
                 </Sheet>
@@ -219,22 +249,6 @@ export function ActivityLog() {
           </div>
         </CardContent>
       </Card>
-
-      {data?.meta && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {((page - 1) * 25) + 1}-{Math.min(page * 25, total)} of {total}
-          </p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-              Previous
-            </Button>
-            <Button variant="outline" size="sm" disabled={page >= (data.meta.totalPages || 1)} onClick={() => setPage(p => p + 1)}>
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

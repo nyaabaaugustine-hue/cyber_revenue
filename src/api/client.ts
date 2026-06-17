@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'ax
 import { getToken, clearAuth } from '../store/authStore';
 import { mockBackend } from './mockBackend';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 const USE_MOCK_BACKEND = import.meta.env.VITE_USE_MOCK_BACKEND === 'true' || !import.meta.env.VITE_API_URL;
 
 class ApiClient {
@@ -62,7 +62,13 @@ class ApiClient {
     );
 
     this.client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        const body = response.data;
+        if (body && typeof body === 'object' && 'success' in body && 'data' in body) {
+          response.data = body.data;
+        }
+        return response;
+      },
       async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
@@ -77,7 +83,6 @@ class ApiClient {
             return this.client(originalRequest);
           } catch {
             clearAuth();
-            window.location.href = '/login';
             return Promise.reject(error);
           }
         }
@@ -91,12 +96,15 @@ class ApiClient {
     if (!this.refreshPromise) {
       this.refreshPromise = (async () => {
         try {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, {
+          const refreshToken = localStorage.getItem('refreshToken');
+          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken }, {
             withCredentials: true,
           });
-          const { accessToken } = response.data;
-          localStorage.setItem('accessToken', accessToken);
-          return accessToken;
+          const body = response.data;
+          const data = body?.data || body;
+          const newToken = data?.token || body?.token;
+          localStorage.setItem('token', newToken);
+          return newToken;
         } catch {
           throw new Error('Token refresh failed');
         }

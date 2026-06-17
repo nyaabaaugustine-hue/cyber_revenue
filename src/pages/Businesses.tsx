@@ -57,6 +57,7 @@ export function Businesses() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<typeof businesses[number] | null>(null);
+  const [formPhoto, setFormPhoto] = useState("");
 
   const filteredBusinesses = businesses.filter((b) => {
     const matchesSearch =
@@ -69,6 +70,7 @@ export function Businesses() {
   const handleRegister = () => {
     toast.success('Business registered successfully');
     setDialogOpen(false);
+    setFormPhoto("");
   };
 
   const handleViewOnMap = (b: typeof businesses[number]) => {
@@ -150,9 +152,18 @@ export function Businesses() {
                   </Select>
                 </div>
               </div>
+              <div className="grid gap-2">
+                <Label htmlFor="photo">Business Photo URL</Label>
+                <Input id="photo" placeholder="https://example.com/photo.jpg" value={formPhoto} onChange={(e) => setFormPhoto(e.target.value)} />
+                {formPhoto && (
+                  <div className="mt-2 rounded-lg overflow-hidden h-32 border">
+                    <img src={formPhoto} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  </div>
+                )}
+              </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => { setDialogOpen(false); setFormPhoto(""); }}>Cancel</Button>
               <Button type="submit" onClick={handleRegister}>Register Business</Button>
             </DialogFooter>
           </DialogContent>
@@ -190,9 +201,19 @@ export function Businesses() {
         {filteredBusinesses.map((business) => (
           <Card
             key={business.id}
-            className="hover:shadow-md transition-shadow cursor-pointer"
+            className="hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
             onClick={() => setSelectedBusiness(business)}
           >
+            {business.photos && business.photos.length > 0 && (
+              <div className="h-40 overflow-hidden">
+                <img
+                  src={business.photos[0]}
+                  alt={business.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              </div>
+            )}
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
@@ -247,6 +268,16 @@ export function Businesses() {
           </SheetHeader>
           {selectedBusiness && (
             <div className="mt-6 space-y-5">
+              {selectedBusiness.photos && selectedBusiness.photos.length > 0 && (
+                <div className="rounded-lg overflow-hidden h-48">
+                  <img
+                    src={selectedBusiness.photos[0]}
+                    alt={selectedBusiness.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                </div>
+              )}
               <div className="flex items-center gap-2 text-sm">
                 <Badge variant={statusVariant[selectedBusiness.status]}>{selectedBusiness.status}</Badge>
                 <Badge variant={levyVariant[selectedBusiness.levyStatus]}>Levy: {selectedBusiness.levyStatus}</Badge>

@@ -1,7 +1,22 @@
 import { useState } from "react";
-import { IcnSearch as Search, IcnGrid as LayoutGrid, IcnList as List, IcnPlus as UserPlus, IcnTrendUp as TrendingUp, IcnStar as Star, IcnUsers as Users, IcnMapPin as MapPin, IcnPhone as Phone, IcnCalendar as Calendar } from "@/components/ui/Icons";
+import {
+  IcnSearch as Search,
+  IcnGrid as LayoutGrid,
+  IcnList as List,
+  IcnPlus as UserPlus,
+  IcnTrendUp as TrendingUp,
+  IcnStar as Star,
+  IcnUsers as Users,
+  IcnMapPin as MapPin,
+  IcnPhone as Phone,
+  IcnCalendar as Calendar,
+  IcnRefresh as Refresh,
+  IcnEye as Eye,
+  IcnWarning as AlertTriangle,
+} from "@/components/ui/Icons";
 import { useNavigate } from "react-router-dom";
 import { agentStats, formatCurrency, formatDate } from "../utils/data";
+import { useAgents, useUpdateAgent } from "../hooks/useAgents";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -24,6 +39,7 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
   "on-break": { label: "On Break", variant: "warning" },
   offline: { label: "Offline", variant: "secondary" },
   active: { label: "In Field", variant: "success" },
+  online: { label: "Online", variant: "success" },
   break: { label: "On Break", variant: "warning" },
 };
 
@@ -47,20 +63,41 @@ export function Agents() {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [selectedAgent, setSelectedAgent] = useState<typeof agentStats[number] | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<any | null>(null);
+  const updateAgent = useUpdateAgent();
 
-  const filtered = agentStats.filter(
-    (a) =>
-      a.officerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.zone.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Try real API, fall back to mock data
+  const { data: apiAgents, isLoading, refetch } = useAgents();
+  const agents = (apiAgents as any)?.data || apiAgents || agentStats;
 
-  const totalToday = filtered.reduce((s, a) => s + a.todayAmount, 0);
+  const filtered = Array.isArray(agents)
+    ? agents.filter(
+        (a: any) =>
+          (a.officerName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (a.zone || "").toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : agentStats.filter(
+        (a) =>
+          a.officerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          a.zone.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+  const totalToday = filtered.reduce((s: number, a: any) => s + (a.todayAmount || 0), 0);
   const avgPerf =
     filtered.length > 0
-      ? filtered.reduce((s, a) => s + a.performanceScore, 0) / filtered.length
+      ? filtered.reduce((s: number, a: any) => s + (a.performanceScore || 0), 0) / filtered.length
       : 0;
-  const activeNow = filtered.filter((a) => a.isActive).length;
+  const activeNow = filtered.filter((a: any) => a.isActive || a.status === "online" || a.status === "active").length;
+
+  const handleStatusChange = async (agent: any, newStatus: string) => {
+    try {
+      await updateAgent.mutateAsync({ id: agent.id || agent.officerId, updates: { status: newStatus } as any });
+      toast.success(`Status updated to ${statusLabel(newStatus)}`);
+      setSelectedAgent({ ...agent, status: newStatus });
+    } catch {
+      toast.error("Failed to update status");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -69,10 +106,16 @@ export function Agents() {
           <h2 className="text-2xl font-bold tracking-tight">Agent Management</h2>
           <p className="text-sm text-muted-foreground">{filtered.length} agents registered</p>
         </div>
-        <Button onClick={() => toast.success('Agent creation form opened')}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add Agent
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <Refresh className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+          <Button onClick={() => toast.success("Agent creation form opened")}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Agent
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -141,9 +184,9 @@ export function Agents() {
 
       {viewMode === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((agent) => (
+          {filtered.map((agent: any) => (
             <Card
-              key={agent.officerId}
+              key={agent.officerId || agent.id}
               className="cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => setSelectedAgent(agent)}
             >
@@ -166,19 +209,19 @@ export function Agents() {
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <p className="text-muted-foreground">Today Collections</p>
-                    <p className="font-medium">{agent.todayCollections}</p>
+                    <p className="font-medium">{agent.todayCollections || 0}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Today Amount</p>
-                    <p className="font-medium">{formatCurrency(agent.todayAmount)}</p>
+                    <p className="font-medium">{formatCurrency(agent.todayAmount || 0)}</p>
                   </div>
                 </div>
                 <div className="mt-4 space-y-1">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Performance</span>
-                    <span className="font-medium">{agent.performanceScore}%</span>
+                    <span className="font-medium">{agent.performanceScore || 0}%</span>
                   </div>
-                  <Progress value={agent.performanceScore} className="h-2" />
+                  <Progress value={agent.performanceScore || 0} className="h-2" />
                 </div>
               </CardContent>
             </Card>
@@ -195,12 +238,13 @@ export function Agents() {
                 <TableHead className="text-right">Collections</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Performance</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((agent) => (
+              {filtered.map((agent: any) => (
                 <TableRow
-                  key={agent.officerId}
+                  key={agent.officerId || agent.id}
                   className="cursor-pointer"
                   onClick={() => setSelectedAgent(agent)}
                 >
@@ -219,15 +263,28 @@ export function Agents() {
                       {statusLabel(agent.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">{agent.todayCollections}</TableCell>
+                  <TableCell className="text-right">{agent.todayCollections || 0}</TableCell>
                   <TableCell className="text-right font-medium">
-                    {formatCurrency(agent.todayAmount)}
+                    {formatCurrency(agent.todayAmount || 0)}
                   </TableCell>
                   <TableCell className="min-w-[120px]">
                     <div className="flex items-center gap-2">
-                      <Progress value={agent.performanceScore} className="h-2 flex-1" />
-                      <span className="text-sm font-medium">{agent.performanceScore}%</span>
+                      <Progress value={agent.performanceScore || 0} className="h-2 flex-1" />
+                      <span className="text-sm font-medium">{agent.performanceScore || 0}%</span>
                     </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate("/map");
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -235,74 +292,146 @@ export function Agents() {
           </Table>
         </Card>
       )}
+
+      {/* Agent Detail Sheet */}
       <Sheet open={!!selectedAgent} onOpenChange={(open) => { if (!open) setSelectedAgent(null); }}>
         <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>{selectedAgent?.officerName}</SheetTitle>
+            <SheetTitle className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={selectedAgent?.avatarUrl} alt={selectedAgent?.officerName} />
+                <AvatarFallback>{selectedAgent ? initials(selectedAgent.officerName) : ""}</AvatarFallback>
+              </Avatar>
+              {selectedAgent?.officerName}
+            </SheetTitle>
             <SheetDescription>{selectedAgent?.zone}</SheetDescription>
           </SheetHeader>
           {selectedAgent && (
             <div className="mt-6 space-y-5">
+              {/* Status Badge */}
               <div className="flex items-center gap-2">
-                <Badge variant={statusVariant(selectedAgent.status)}>{statusLabel(selectedAgent.status)}</Badge>
+                <Badge variant={statusVariant(selectedAgent.status)}>
+                  {statusLabel(selectedAgent.status)}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  Last active: {selectedAgent.lastActiveAt ? formatDate(selectedAgent.lastActiveAt) : "Unknown"}
+                </span>
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Star className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground text-xs">Performance Score</span>
-                    <span className="font-medium text-sm">{selectedAgent.performanceScore}%</span>
-                  </div>
-                  <Progress value={selectedAgent.performanceScore} className="h-2 mt-1" />
+
+              {/* Supervisory Status Controls */}
+              <div className="bg-muted/50 rounded-lg p-3">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Change Status</p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant={selectedAgent.status === "online" || selectedAgent.status === "active" ? "default" : "outline"}
+                    onClick={() => handleStatusChange(selectedAgent, "online")}
+                  >
+                    In Field
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={selectedAgent.status === "break" || selectedAgent.status === "on-break" ? "default" : "outline"}
+                    onClick={() => handleStatusChange(selectedAgent, "break")}
+                  >
+                    On Break
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={selectedAgent.status === "offline" ? "default" : "outline"}
+                    onClick={() => handleStatusChange(selectedAgent, "offline")}
+                  >
+                    Offline
+                  </Button>
                 </div>
               </div>
+
               <Separator />
+
+              {/* Performance Score */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground text-xs">Performance Score</span>
+                  <span className="font-medium text-sm">{selectedAgent.performanceScore || 0}%</span>
+                </div>
+                <Progress value={selectedAgent.performanceScore || 0} className="h-2" />
+              </div>
+
+              <Separator />
+
+              {/* Today's Stats */}
               <div>
                 <h4 className="text-sm font-semibold mb-3">Today</h4>
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div className="bg-muted rounded-lg p-3 text-center">
-                    <p className="text-lg font-bold">{selectedAgent.todayCollections}</p>
+                    <p className="text-lg font-bold">{selectedAgent.todayCollections || 0}</p>
                     <p className="text-xs text-muted-foreground">Collections</p>
                   </div>
                   <div className="bg-muted rounded-lg p-3 text-center">
-                    <p className="text-lg font-bold">{formatCurrency(selectedAgent.todayAmount)}</p>
+                    <p className="text-lg font-bold">{formatCurrency(selectedAgent.todayAmount || 0)}</p>
                     <p className="text-xs text-muted-foreground">Amount</p>
                   </div>
                   <div className="bg-muted rounded-lg p-3 text-center">
-                    <p className="text-lg font-bold">{selectedAgent.todayVisits ?? '-'}</p>
+                    <p className="text-lg font-bold">{selectedAgent.todayVisits ?? "-"}</p>
                     <p className="text-xs text-muted-foreground">Visits</p>
                   </div>
                 </div>
               </div>
+
               <Separator />
+
+              {/* Weekly / Monthly */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground text-xs">Weekly Collections</p>
-                  <p className="font-medium">{selectedAgent.weekCollections}</p>
-                  <p className="text-xs text-muted-foreground">{formatCurrency(selectedAgent.weekAmount)}</p>
+                  <p className="font-medium">{selectedAgent.weekCollections || 0}</p>
+                  <p className="text-xs text-muted-foreground">{formatCurrency(selectedAgent.weekAmount || 0)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Monthly Collections</p>
-                  <p className="font-medium">{selectedAgent.monthCollections}</p>
-                  <p className="text-xs text-muted-foreground">{formatCurrency(selectedAgent.monthAmount)}</p>
+                  <p className="font-medium">{selectedAgent.monthCollections || 0}</p>
+                  <p className="text-xs text-muted-foreground">{formatCurrency(selectedAgent.monthAmount || 0)}</p>
                 </div>
               </div>
+
               <Separator />
-              {selectedAgent.targetAmount > 0 && (
+
+              {/* Target Progress */}
+              {(selectedAgent.targetAmount || 0) > 0 && (
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground text-xs">Target Progress</span>
-                    <span className="font-medium text-sm">{selectedAgent.targetPercent}%</span>
+                    <span className="font-medium text-sm">{selectedAgent.targetPercent || 0}%</span>
                   </div>
-                  <Progress value={selectedAgent.targetPercent} className="h-2" />
+                  <Progress value={selectedAgent.targetPercent || 0} className="h-2" />
                   <p className="text-xs text-muted-foreground">
-                    GHS {selectedAgent.todayAmount.toLocaleString()} / GHS {selectedAgent.targetAmount.toLocaleString()}
+                    GHS {(selectedAgent.todayAmount || 0).toLocaleString()} / GHS {(selectedAgent.targetAmount || 0).toLocaleString()}
                   </p>
                 </div>
               )}
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4 shrink-0" />
-                <span>Last active: {formatDate(selectedAgent.lastActiveAt)}</span>
+
+              {/* Quick Actions */}
+              <Separator />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    toast.info("Opening map...");
+                    navigate("/map");
+                  }}
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  View on Map
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => toast.info("Calling agent...")}
+                >
+                  <Phone className="w-4 h-4 mr-2" />
+                  Call Agent
+                </Button>
               </div>
             </div>
           )}

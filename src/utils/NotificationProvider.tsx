@@ -100,7 +100,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const interval = setInterval(() => {
       const n = generateNotification();
       addNotification(n);
-    }, 15000);
+    }, 10000);
     return () => clearInterval(interval);
   }, [addNotification]);
 

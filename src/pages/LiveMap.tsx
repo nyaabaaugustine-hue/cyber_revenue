@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { IcnSearch as Search, IcnLayers as Layers, IcnMapPin as MapPin, IcnUsers as Users, IcnActivity as Activity, IcnX as X, IcnBuilding as Building2, IcnPhone as Phone, IcnClock as Clock, IcnList as List, IcnGrid as Grid3X3, IcnNav as Navigation } from "@/components/ui/Icons";
 import { MapView } from "../components/MapView";
-import { businesses, agentStats, zones, formatCurrency } from "../utils/data";
+import { businesses, zones, formatCurrency } from "../utils/data";
+import { useAuthStore } from "../store/authStore";
 import { Business, AgentStats } from "../types";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -44,7 +45,48 @@ export function LiveMap() {
   const [selectedAgent, setSelectedAgent] = useState<AgentStats | null>(null);
   const [flyToLocation, setFlyToLocation] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
   const [hoveredBusinessId, setHoveredBusinessId] = useState<string | null>(null);
+  const [liveAgents, setLiveAgents] = useState<AgentStats[]>([]);
   const [searchParams] = useSearchParams();
+  const token = useAuthStore(s => s.token);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
+        const res = await fetch(`${API_URL}/agents/locations`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+          const mapped: AgentStats[] = json.data
+            .filter((a: any) => a.lastLat && a.lastLng)
+            .map((a: any) => ({
+              officerId: a.officerId,
+              officerName: a.officerName,
+              zone: a.zone || 'Unassigned',
+              isActive: a.status === 'online',
+              status: a.status,
+              lastLocation: { lat: parseFloat(a.lastLat), lng: parseFloat(a.lastLng) },
+              todayCollections: a.todayCollections || 0,
+              todayAmount: parseFloat(a.todayAmount || '0'),
+              todayVisits: 0,
+              weekCollections: 0,
+              weekAmount: '0',
+              monthCollections: 0,
+              monthAmount: '0',
+              targetAmount: '0',
+              targetPercent: 0,
+              performanceScore: 0,
+              lastActiveAt: a.lastActiveAt,
+            }));
+          setLiveAgents(mapped);
+        }
+      } catch {}
+    };
+    fetchLocations();
+    const interval = setInterval(fetchLocations, 10000);
+    return () => clearInterval(interval);
+  }, [token]);
 
   // Handle navigation from Businesses page with ?business=XXX&lat=...&lng=...
   useEffect(() => {
@@ -70,7 +112,9 @@ export function LiveMap() {
     return matchesZone && matchesSearch;
   });
 
-  const filteredAgents = agentStats.filter((a) => {
+  const allAgents = liveAgents.length > 0 ? liveAgents : [];
+
+  const filteredAgents = allAgents.filter((a) => {
     if (selectedZone === "all") return true;
     const zoneName = zones.find((z) => z.id === selectedZone)?.name;
     return a.zone === zoneName;
@@ -133,6 +177,10 @@ export function LiveMap() {
               <TabsTrigger value="businesses" className="flex-1 gap-2">
                 <Building2 className="w-4 h-4" />
                 Businesses
+              </TabsTrigger>
+              <TabsTrigger value="agents" className="flex-1 gap-2">
+                <Users className="w-4 h-4" />
+                Agents
               </TabsTrigger>
               <TabsTrigger value="controls" className="flex-1 gap-2">
                 <Layers className="w-4 h-4" />
@@ -242,6 +290,76 @@ export function LiveMap() {
                         >
                           <Navigation className="w-3.5 h-3.5 text-muted-foreground" />
                         </Button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="agents" className="flex-1 flex flex-col mt-0 p-0">
+            <div className="p-4 pb-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">{filteredAgents.length} agents tracked</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="text-[10px] text-muted-foreground">{filteredAgents.filter(a => a.isActive).length} online</span>
+                </div>
+              </div>
+            </div>
+            <ScrollArea className="flex-1 px-4 pb-4">
+              <div className="space-y-2">
+                {filteredAgents.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No agent locations yet</p>
+                    <p className="text-xs mt-1">Agents will appear when GPS is active</p>
+                  </div>
+                ) : (
+                  filteredAgents.map((a) => {
+                    const isSelected = selectedAgent?.officerId === a.officerId;
+                    return (
+                      <div
+                        key={a.officerId}
+                        onClick={() => handleAgentClick(a)}
+                        className={cn(
+                          "flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer",
+                          isSelected ? "border-primary bg-primary/5 shadow-sm" : "border-border/50 bg-card hover:bg-accent/50"
+                        )}
+                      >
+                        <div className="relative">
+                          <div className={cn(
+                            "w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold",
+                            a.isActive ? "bg-blue-500" : "bg-gray-400"
+                          )}>
+                            {a.officerName.charAt(0)}
+                          </div>
+                          {a.isActive && <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-card" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{a.officerName}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Badge variant="secondary" className="text-[10px] h-4">{a.zone}</Badge>
+                            <span className={cn("text-xs", a.isActive ? "text-emerald-500" : "text-muted-foreground")}>
+                              {a.isActive ? "Online" : "Offline"}
+                            </span>
+                          </div>
+                          {a.lastLocation && (
+                            <p className="text-[10px] text-muted-foreground mt-1 font-mono">
+                              {a.lastLocation.lat.toFixed(5)}, {a.lastLocation.lng.toFixed(5)}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-3 mt-1.5 text-xs">
+                            <span className="text-emerald-500 font-medium">GHS {a.todayAmount.toLocaleString()}</span>
+                            <span className="text-muted-foreground">{a.todayCollections} collections</span>
+                          </div>
+                        </div>
+                        {a.lastLocation && (
+                          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={(e) => { e.stopPropagation(); handleAgentClick(a); }}>
+                            <Navigation className="w-3.5 h-3.5 text-muted-foreground" />
+                          </Button>
+                        )}
                       </div>
                     );
                   })

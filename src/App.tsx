@@ -8,10 +8,13 @@ import {
   IcnCheckCircle as ShieldCheck, IcnScale as Scale, IcnBank as Bank, IcnSmartphone as Smartphone, IcnChevronRight as ChevronRight,
 } from '@/components/ui/Icons';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { Login } from './pages/Login';
+import { GpsPermissionDialog } from './components/common/GpsPermissionDialog';
 import ToastProvider from './components/common/Toast';
 import { ThemeProvider } from './components/ThemeProvider';
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import { hasPermission, roleLabels } from './utils/permissions';
+import { LocationTracker } from './components/common/LocationTracker';
 import { NotificationProvider, useNotifications } from './utils/NotificationProvider';
 import { CommandPalette } from './components/common/CommandPalette';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -116,10 +119,16 @@ function SidebarNav({ collapsed, onToggle }: { collapsed: boolean; onToggle: () 
   const { user } = useAuth();
   const userRole = user?.role || 'admin';
 
+  const isFieldRole = userRole === 'field_officer';
+
   const filteredGroups = navGroups
     .map(group => ({
       ...group,
-      items: group.items.filter(item => hasPermission(userRole, item.resource, 'view')),
+      items: group.items.filter(item => {
+        if (!hasPermission(userRole, item.resource, 'view')) return false;
+        if (isFieldRole && item.id === 'agents') return false;
+        return true;
+      }),
     }))
     .filter(group => group.items.length > 0);
 
@@ -272,10 +281,23 @@ function NotificationBell() {
 function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, isImpersonating, originalUser, stopImpersonation } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [gpsDialogOpen, setGpsDialogOpen] = useState(false);
+
+  const isFieldAgent = user?.role === 'field_officer' || user?.role === 'supervisor';
+
+  useEffect(() => {
+    if (isFieldAgent) {
+      const hasSeenGpsPrompt = sessionStorage.getItem('gps_prompted');
+      if (!hasSeenGpsPrompt) {
+        setGpsDialogOpen(true);
+        sessionStorage.setItem('gps_prompted', '1');
+      }
+    }
+  }, [isFieldAgent]);
 
   useKeyboardShortcuts({
     onToggleSidebar: () => setSidebarCollapsed(!sidebarCollapsed),
@@ -297,6 +319,11 @@ function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background flex">
+      <GpsPermissionDialog
+        open={gpsDialogOpen}
+        onGranted={() => setGpsDialogOpen(false)}
+        onDenied={() => setGpsDialogOpen(false)}
+      />
       <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
 
       {/* Mobile sidebar overlay */}
@@ -361,11 +388,25 @@ function AppLayout() {
                 <DropdownMenuItem onClick={() => navigate('/settings')}>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive" onClick={() => { logout(); navigate('/login'); toast.success('Logged out successfully'); }}>Log out</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive" onClick={() => { logout(); navigate('/login', { replace: true }); toast.success('Logged out successfully'); }}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </header>
+
+        {isImpersonating && (
+          <div className="flex items-center justify-between px-4 py-2 bg-indigo-600 text-white text-sm">
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              <span>
+                Logged in as <strong>{user?.fullName}</strong> ({user?.role}) — <span className="text-indigo-200">switched from {originalUser?.fullName}</span>
+              </span>
+            </div>
+            <Button size="sm" variant="ghost" className="text-white hover:bg-indigo-700 h-7 text-xs" onClick={() => { stopImpersonation(); toast.success(`Back to ${originalUser?.fullName}`); }}>
+              Exit
+            </Button>
+          </div>
+        )}
 
         <main className="flex-1 overflow-y-auto bg-muted/30">
           <div className="p-4 lg:p-6">
@@ -404,6 +445,14 @@ function AppLayout() {
   );
 }
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+}
+
 function AppContent() {
   return (
     <ErrorBoundary>
@@ -412,7 +461,11 @@ function AppContent() {
           <QueryClientProvider client={queryClient}>
             <ToastProvider>
               <NotificationProvider>
-                <AppLayout />
+                <LocationTracker />
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/*" element={<ProtectedRoute><AppLayout /></ProtectedRoute>} />
+                </Routes>
               </NotificationProvider>
             </ToastProvider>
           </QueryClientProvider>

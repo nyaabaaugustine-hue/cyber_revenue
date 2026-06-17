@@ -18,7 +18,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { dashboardStats, revenueTrend, categoryBreakdown, agentStats, formatCurrency } from "../utils/data";
+import { dashboardStats, revenueTrend, categoryBreakdown, agentStats, businesses, formatCurrency } from "../utils/data";
 import { AgentStats } from "../types";
 
 const COLORS = [

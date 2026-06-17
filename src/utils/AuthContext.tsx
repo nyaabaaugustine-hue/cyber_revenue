@@ -1,11 +1,16 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, UserRole } from '../types';
 import { users, getUserByEmail, currentUser } from './data';
+import { useAuthStore } from '../store/authStore';
 
 interface AuthContextType {
   user: User | null;
+  originalUser: User | null;
+  isImpersonating: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  loginAs: (targetUser: User) => void;
+  stopImpersonation: () => void;
   logout: () => void;
   switchRole: (role: UserRole) => void;
   availableUsers: User[];
@@ -13,24 +18,64 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const USE_MOCK = import.meta.env.VITE_USE_MOCK_BACKEND === 'true' || !import.meta.env.VITE_API_URL;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(currentUser);
+  const [user, setUser] = useState<User | null>(() => {
+    if (!USE_MOCK) {
+      const storeUser = useAuthStore.getState().user;
+      if (storeUser) return storeUser as User;
+    }
+    return currentUser;
+  });
+  const [originalUser, setOriginalUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (!USE_MOCK && useAuthStore.getState().isAuthenticated && !user) {
+      loadCurrentUser();
+    }
+  }, []);
+
+  const loadCurrentUser = async () => {
+    try {
+      const mod = await import('../api/client');
+      const response = await mod.api.get<User>('/auth/me');
+      const userData = response.data;
+      setUser(userData);
+      useAuthStore.getState().setUser(userData as any);
+    } catch {
+      setUser(null);
+    }
+  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    if (!USE_MOCK) {
+      try {
+        const mod = await import('../api/client');
+        const response = await mod.api.post<{ user: User; token: string; refreshToken: string }>('/auth/login', { email, password });
+        const { user: userData, token, refreshToken } = response.data;
+        useAuthStore.getState().login(userData as any, token, refreshToken);
+        setUser(userData);
+        return true;
+      } catch {
+        return false;
+      }
+    }
     if (email && password) {
       const matched = getUserByEmail(email);
-      if (matched) {
-        setUser(matched);
-      } else {
-        setUser({ ...currentUser, email });
-      }
+      setUser(matched || { ...currentUser, email });
       return true;
     }
     return false;
   };
 
   const logout = () => {
+    useAuthStore.getState().clearAuth();
     setUser(null);
+    setOriginalUser(null);
+    localStorage.removeItem('auth-store');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
   };
 
   const switchRole = (role: UserRole) => {
@@ -42,8 +87,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginAs = (targetUser: User) => {
+    setOriginalUser(user);
+    setUser(targetUser);
+  };
+
+  const stopImpersonation = () => {
+    if (originalUser) {
+      setUser(originalUser);
+      setOriginalUser(null);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, switchRole, availableUsers: users }}>
+    <AuthContext.Provider value={{
+      user,
+      originalUser,
+      isImpersonating: !!originalUser,
+      isAuthenticated: !!user,
+      login,
+      loginAs,
+      stopImpersonation,
+      logout,
+      switchRole,
+      availableUsers: users
+    }}>
       {children}
     </AuthContext.Provider>
   );
