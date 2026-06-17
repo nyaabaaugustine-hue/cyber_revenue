@@ -5,6 +5,17 @@ export interface Location {
   lng: number;
 }
 
+export interface BusinessDocument {
+  id: string;
+  name: string;
+  type: 'receipt' | 'invoice' | 'license' | 'permit' | 'certificate' | 'notice' | 'dispute' | 'other';
+  date: string;
+  amount?: number;
+  status: 'valid' | 'expired' | 'pending' | 'disputed';
+  url?: string;
+  notes?: string;
+}
+
 export interface Business {
   id: string;
   businessId: string;
@@ -32,6 +43,7 @@ export interface Business {
   lastCollectionAmount?: number;
   totalCollected?: number;
   notes: string | null;
+  documents?: BusinessDocument[];
 }
 
 export interface AgentStats {

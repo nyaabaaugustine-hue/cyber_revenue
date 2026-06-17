@@ -262,7 +262,25 @@ export function Reports() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Agent Performance Ranking</CardTitle>
-          <Button variant="outline" size="sm" onClick={() => toast.success('Agent performance report exported as CSV')}>
+          <Button variant="outline" size="sm" onClick={() => {
+            const rows = [
+              ["Rank", "Agent", "Zone", "Today", "Week", "Month", "Collections", "Score"],
+              ...[...agentStats].sort((a, b) => b.performanceScore - a.performanceScore).map((a, i) => [
+                String(i + 1), a.officerName, a.zone, formatCurrency(a.todayAmount),
+                formatCurrency(a.weekAmount), formatCurrency(a.monthAmount),
+                String(a.todayCollections), String(a.performanceScore)
+              ]),
+            ];
+            const csv = rows.map(r => r.join(",")).join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `agent-performance-${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success("Agent performance report exported as CSV");
+          }}>
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>

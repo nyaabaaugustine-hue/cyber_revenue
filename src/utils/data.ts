@@ -44,6 +44,61 @@ const defaultBiz = {
   lastVisitedBy: null,
   notes: null,
   photos: [],
+  documents: [],
+};
+
+const bizDocuments: Record<string, any[]> = {
+  "1": [
+    { id: "doc-1-1", name: "Levy Payment Receipt - Jan 2024", type: "receipt", date: "2024-01-20T10:00:00Z", amount: 500, status: "valid", notes: "Annual levy payment" },
+    { id: "doc-1-2", name: "Business Operating License", type: "license", date: "2024-01-15T08:00:00Z", status: "valid", notes: "Valid until Dec 2024" },
+    { id: "doc-1-3", name: "Fire Safety Certificate", type: "certificate", date: "2024-02-10T09:00:00Z", status: "valid", notes: "Annual inspection passed" },
+    { id: "doc-1-4", name: "Levy Payment Receipt - Feb 2024", type: "receipt", date: "2024-02-20T10:00:00Z", amount: 500, status: "valid" },
+    { id: "doc-1-5", name: "Health Permit", type: "permit", date: "2024-03-01T08:00:00Z", status: "valid", notes: "Food handling approved" },
+    { id: "doc-1-6", name: "Levy Payment Receipt - Mar 2024", type: "receipt", date: "2024-03-20T10:00:00Z", amount: 500, status: "valid" },
+    { id: "doc-1-7", name: "Q1 Tax Invoice", type: "invoice", date: "2024-04-01T08:00:00Z", amount: 1500, status: "valid", notes: "Quarterly tax" },
+    { id: "doc-1-8", name: "Levy Payment Receipt - Apr 2024", type: "receipt", date: "2024-04-20T10:00:00Z", amount: 500, status: "valid" },
+  ],
+  "2": [
+    { id: "doc-2-1", name: "Levy Payment Receipt - Jan 2024", type: "receipt", date: "2024-01-22T10:00:00Z", amount: 350, status: "valid" },
+    { id: "doc-2-2", name: "Food Hygiene License", type: "license", date: "2024-01-10T08:00:00Z", status: "valid", notes: "Food safety certified" },
+    { id: "doc-2-3", name: "Health Inspection Report", type: "certificate", date: "2024-03-15T09:00:00Z", status: "valid" },
+    { id: "doc-2-4", name: "Levy Payment Receipt - Feb 2024", type: "receipt", date: "2024-02-22T10:00:00Z", amount: 350, status: "valid" },
+    { id: "doc-2-5", name: "Signage Permit", type: "permit", date: "2024-02-01T08:00:00Z", status: "expired", notes: "Needs renewal" },
+  ],
+  "3": [
+    { id: "doc-3-1", name: "Business Registration Certificate", type: "certificate", date: "2024-03-05T11:00:00Z", status: "valid" },
+    { id: "doc-3-2", name: "Levy Payment Receipt - Mar 2024", type: "receipt", date: "2024-03-20T10:00:00Z", amount: 750, status: "valid" },
+    { id: "doc-3-3", name: "Duplicate Collection Dispute", type: "dispute", date: "2024-06-08T16:00:00Z", status: "disputed", notes: "Flagged for investigation" },
+    { id: "doc-3-4", name: "Electronics Import Permit", type: "permit", date: "2024-04-01T08:00:00Z", status: "valid" },
+    { id: "doc-3-5", name: "Q1 Tax Invoice", type: "invoice", date: "2024-04-01T08:00:00Z", amount: 2200, status: "valid" },
+    { id: "doc-3-6", name: "Levy Payment Receipt - Apr 2024", type: "receipt", date: "2024-04-20T10:00:00Z", amount: 750, status: "valid" },
+    { id: "doc-3-7", name: "Levy Payment Receipt - May 2024", type: "receipt", date: "2024-05-20T10:00:00Z", amount: 750, status: "valid" },
+  ],
+  "4": [
+    { id: "doc-4-1", name: "Pharmacy Operating License", type: "license", date: "2024-01-28T09:00:00Z", status: "valid", notes: "FDA approved" },
+    { id: "doc-4-2", name: "Drug Handling Certificate", type: "certificate", date: "2024-02-15T09:00:00Z", status: "valid" },
+    { id: "doc-4-3", name: "Levy Payment Receipt - Jan 2024", type: "receipt", date: "2024-01-30T10:00:00Z", amount: 600, status: "valid" },
+    { id: "doc-4-4", name: "Levy Payment Receipt - Feb 2024", type: "receipt", date: "2024-02-28T10:00:00Z", amount: 600, status: "valid" },
+    { id: "doc-4-5", name: "Levy Payment Receipt - Mar 2024", type: "receipt", date: "2024-03-28T10:00:00Z", amount: 600, status: "valid" },
+    { id: "doc-4-6", name: "Levy Payment Receipt - Apr 2024", type: "receipt", date: "2024-04-28T10:00:00Z", amount: 600, status: "valid" },
+    { id: "doc-4-7", name: "Q2 Tax Invoice", type: "invoice", date: "2024-07-01T08:00:00Z", amount: 1800, status: "pending" },
+    { id: "doc-4-8", name: "Cold Storage Permit", type: "permit", date: "2024-03-01T08:00:00Z", status: "valid" },
+  ],
+  "5": [
+    { id: "doc-5-1", name: "Tailoring Business License", type: "license", date: "2024-02-10T13:00:00Z", status: "expired", notes: "License expired - needs renewal" },
+    { id: "doc-5-2", name: "Levy Payment Receipt - Feb 2024", type: "receipt", date: "2024-02-20T10:00:00Z", amount: 250, status: "valid" },
+    { id: "doc-5-3", name: "Overpayment Notice", type: "notice", date: "2024-05-20T11:00:00Z", status: "pending", notes: "Customer claims overpayment of GHS 150" },
+    { id: "doc-5-4", name: "Trade Association Membership", type: "certificate", date: "2024-01-15T08:00:00Z", status: "valid" },
+  ],
+  "6": [
+    { id: "doc-6-1", name: "Service Business License", type: "license", date: "2024-04-01T08:00:00Z", status: "valid" },
+    { id: "doc-6-2", name: "Environmental Compliance Certificate", type: "certificate", date: "2024-04-15T09:00:00Z", status: "valid", notes: "Water discharge approved" },
+    { id: "doc-6-3", name: "Levy Payment Receipt - Apr 2024", type: "receipt", date: "2024-04-20T10:00:00Z", amount: 300, status: "valid" },
+    { id: "doc-6-4", name: "Levy Payment Receipt - May 2024", type: "receipt", date: "2024-05-20T10:00:00Z", amount: 300, status: "valid" },
+    { id: "doc-6-5", name: "Levy Payment Receipt - Jun 2024", type: "receipt", date: "2024-06-13T15:00:00Z", amount: 300, status: "valid" },
+    { id: "doc-6-6", name: "Water Usage Permit", type: "permit", date: "2024-04-01T08:00:00Z", status: "valid" },
+    { id: "doc-6-7", name: "Q2 Tax Invoice", type: "invoice", date: "2024-07-01T08:00:00Z", amount: 900, status: "pending" },
+  ],
 };
 
 export const businesses: Business[] = [
@@ -70,7 +125,8 @@ export const businesses: Business[] = [
     registeredAt: "2024-01-15T08:30:00Z",
     lastVisitedAt: "2024-06-10T14:20:00Z",
     lastCollectionAmount: 150,
-    totalCollected: 1850
+    totalCollected: 1850,
+    documents: bizDocuments["1"],
   },
   {
     ...defaultBiz,
@@ -94,7 +150,8 @@ export const businesses: Business[] = [
     registeredAt: "2024-02-20T10:00:00Z",
     lastVisitedAt: "2024-06-12T09:15:00Z",
     lastCollectionAmount: 200,
-    totalCollected: 2400
+    totalCollected: 2400,
+    documents: bizDocuments["2"],
   },
   {
     ...defaultBiz,

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { IcnSettings as SettingsIcon, IcnShield as Shield, IcnBell as Bell, IcnGlobe as Globe, IcnCircle as Palette, IcnDatabase as Database, IcnSave as Save } from "@/components/ui/Icons";
 import { useAuth } from "../utils/AuthContext";
 import { hasPermission } from "../utils/permissions";
-import { formatCurrency } from "../utils/data";
+import { formatCurrency, businesses } from "../utils/data";
 import { useTheme } from "../components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -326,8 +326,27 @@ export function Settings() {
                   <p className="text-xs text-muted-foreground">Download all district data</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => toast.success('Data exported as CSV')}>Export CSV</Button>
-                  <Button variant="outline" size="sm" onClick={() => toast.success('Data exported as JSON')}>Export JSON</Button>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const rows = [["ID", "Name", "Owner", "Phone", "Zone", "Status", "Levy Status", "Outstanding"],
+                      ...businesses.map(b => [b.businessId, b.name, b.ownerName, b.ownerPhone, b.zoneName, b.status, b.levyStatus, String(b.totalOutstanding)])
+                    ];
+                    const csv = rows.map(r => r.join(",")).join("\n");
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a"); a.href = url;
+                    a.download = `businesses-${new Date().toISOString().slice(0,10)}.csv`;
+                    a.click(); URL.revokeObjectURL(url);
+                    toast.success(`Exported ${businesses.length} businesses as CSV`);
+                  }}>Export CSV</Button>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const json = JSON.stringify(businesses, null, 2);
+                    const blob = new Blob([json], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a"); a.href = url;
+                    a.download = `businesses-${new Date().toISOString().slice(0,10)}.json`;
+                    a.click(); URL.revokeObjectURL(url);
+                    toast.success(`Exported ${businesses.length} businesses as JSON`);
+                  }}>Export JSON</Button>
                 </div>
               </div>
             </CardContent>
