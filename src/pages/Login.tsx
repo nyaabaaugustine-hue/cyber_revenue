@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IcnShield as Shield,
@@ -51,10 +51,9 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [focusedField, setFocusedField] = useState<string | null>(null);
-  const { login, isAuthenticated } = useAuth();
+  const [selectedQuick, setSelectedQuick] = useState<string | null>(null);
+  const { login, availableUsers, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (isAuthenticated) navigate("/", { replace: true });
@@ -110,28 +109,20 @@ export function Login() {
     <div className="h-screen w-screen flex overflow-hidden bg-slate-950">
       {/* Left Panel — Immersive Branding */}
       <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
-        {/* Animated Background */}
         <img
           src="https://res.cloudinary.com/dwsl2ktt2/image/upload/v1781679029/VV_pl3beb.jpg"
           alt=""
-          className="absolute inset-0 w-full h-full object-cover scale-105 brightness-[0.35] saturate-[0.6] animate-[pulse_8s_ease-in-out_infinite]"
+          className="absolute inset-0 w-full h-full object-cover scale-105 brightness-[0.35] saturate-[0.6]"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950/95 via-slate-950/90 to-indigo-950/85" />
-
-        {/* Animated Mesh Overlay */}
         <div className="absolute inset-0 opacity-[0.03]" style={{
           backgroundImage: `radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)`,
           backgroundSize: '50px 50px'
         }} />
-
-        {/* Floating Glow Orbs — static for performance */}
         <div className="absolute top-20 left-20 w-72 h-72 bg-indigo-500/10 rounded-full blur-[100px]" />
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-violet-500/8 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-emerald-500/6 rounded-full blur-[80px]" />
 
-        {/* Content */}
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          {/* Top — Logo + Brand */}
           <div>
             <div className="inline-flex items-center gap-3 mb-2">
               <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 rounded-2xl shadow-lg shadow-indigo-500/25 flex items-center justify-center ring-1 ring-white/10">
@@ -144,11 +135,10 @@ export function Login() {
             </div>
           </div>
 
-          {/* Center — Hero */}
           <div className="flex-1 flex flex-col justify-center max-w-lg">
             <div className="space-y-3 mb-10">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 Kumasi Metropolitan Assembly
               </div>
               <h2 className="text-5xl font-bold text-white leading-[1.1] tracking-tight">
@@ -163,13 +153,11 @@ export function Login() {
               </p>
             </div>
 
-            {/* Feature Grid */}
             <div className="grid grid-cols-2 gap-3">
               {features.map((f, i) => (
                 <div
                   key={i}
                   className="group flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-300 cursor-default"
-                  style={{ animationDelay: `${i * 100}ms` }}
                 >
                   <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${f.color} flex items-center justify-center shrink-0 shadow-lg shadow-black/20 ring-1 ring-white/10`}>
                     <f.icon className="w-4 h-4 text-white" />
@@ -183,7 +171,6 @@ export function Login() {
             </div>
           </div>
 
-          {/* Bottom — Stats Bar */}
           <div className="flex items-center gap-8 text-sm">
             {[
               { value: "99.9%", label: "Uptime" },
@@ -200,16 +187,15 @@ export function Login() {
       </div>
 
       {/* Right Panel — Login Form */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 relative bg-slate-950">
-        {/* Subtle Background Pattern */}
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 relative bg-slate-950">
         <div className="absolute inset-0 opacity-[0.04]" style={{
           backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 1px)`,
           backgroundSize: '40px 40px'
         }} />
 
-        <div className="w-full max-w-[460px] relative z-10">
+        <div className="w-full max-w-[460px] relative z-10 flex flex-col">
           {/* Mobile-only logo */}
-          <div className="lg:hidden text-center mb-10">
+          <div className="lg:hidden text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl mb-4 shadow-lg shadow-indigo-500/25 ring-1 ring-white/10">
               <Shield className="w-8 h-8 text-white" />
             </div>
@@ -217,15 +203,13 @@ export function Login() {
             <p className="text-slate-400 text-sm mt-1.5">District Revenue Command System</p>
           </div>
 
-          {/* Form Card — no backdrop-blur for performance */}
+          {/* Form Card */}
           <div className="bg-white/[0.06] border border-white/[0.1] rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/40">
-            {/* Header */}
-            <div className="mb-8">
+            <div className="mb-6">
               <h2 className="text-3xl font-bold text-white tracking-tight">Welcome back</h2>
               <p className="text-slate-300 text-sm mt-2">Sign in to access the command center</p>
             </div>
 
-            {/* Error */}
             {error && (
               <div className="mb-5 px-4 py-3 rounded-xl bg-red-500/15 border border-red-500/25 text-sm text-red-300 flex items-center gap-2">
                 <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
@@ -235,38 +219,32 @@ export function Login() {
               </div>
             )}
 
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Email</label>
-                <div className={`relative group transition-all duration-200 ${focusedField === 'email' ? 'scale-[1.01]' : ''}`}>
+                <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
                   <Input
                     type="email"
                     placeholder="you@kma.gov.gh"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setError(""); }}
-                    onFocus={() => setFocusedField('email')}
-                    onBlur={() => setFocusedField(null)}
                     autoFocus
-                    className="pl-11 h-13 bg-white/[0.07] border-white/[0.12] text-white placeholder:text-slate-500 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/15 rounded-xl transition-all text-[15px]"
+                    className="pl-11 h-12 bg-white/[0.07] border-white/[0.12] text-white placeholder:text-slate-500 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/15 rounded-xl transition-all text-[15px]"
                   />
                 </div>
               </div>
 
-              {/* Password */}
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Password</label>
-                <div className={`relative group transition-all duration-200 ${focusedField === 'password' ? 'scale-[1.01]' : ''}`}>
+                <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                    onFocus={() => setFocusedField('password')}
-                    onBlur={() => setFocusedField(null)}
-                    className="pl-11 pr-11 h-13 bg-white/[0.07] border-white/[0.12] text-white placeholder:text-slate-500 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/15 rounded-xl transition-all text-[15px]"
+                    className="pl-11 pr-11 h-12 bg-white/[0.07] border-white/[0.12] text-white placeholder:text-slate-500 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/15 rounded-xl transition-all text-[15px]"
                   />
                   <button
                     type="button"
@@ -278,7 +256,6 @@ export function Login() {
                 </div>
               </div>
 
-              {/* Remember + Forgot */}
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <div className="w-4 h-4 rounded border border-white/15 bg-white/[0.05] flex items-center justify-center">
@@ -291,11 +268,10 @@ export function Login() {
                 </button>
               </div>
 
-              {/* Sign In Button */}
               <Button
                 type="submit"
                 disabled={isLoading || !email || !password}
-                className="w-full h-13 bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:via-indigo-500 hover:to-violet-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 text-sm tracking-wide"
+                className="w-full h-12 bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 hover:from-indigo-500 hover:via-indigo-500 hover:to-violet-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 text-sm tracking-wide"
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
@@ -308,22 +284,46 @@ export function Login() {
               </Button>
             </form>
 
-            {/* Stats */}
-            <div className="mt-6 grid grid-cols-3 gap-3">
-              {features.map((f, i) => (
-                <div key={i} className="flex flex-col items-center text-center p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${f.color} flex items-center justify-center mb-2 shadow-lg shadow-black/20 ring-1 ring-white/10`}>
-                    <f.icon className="w-4 h-4 text-white" />
-                  </div>
-                  <p className="text-[11px] font-semibold text-white/90 leading-tight">{f.label}</p>
-                  <p className="text-[9px] text-slate-500 mt-0.5">{f.sub}</p>
-                </div>
+            {/* Divider */}
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/[0.08]" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-3 py-1 bg-white/[0.06] rounded-full text-slate-400 border border-white/[0.08]">or</span>
+              </div>
+            </div>
+
+            {/* Quick Select — Horizontal Row */}
+            <div className="grid grid-cols-6 gap-2">
+              {availableUsers.map((u) => (
+                <button
+                  key={u.id}
+                  onClick={() => quickLogin(u)}
+                  disabled={isLoading}
+                  className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all duration-200 group ${
+                    selectedQuick === u.id
+                      ? "bg-indigo-500/15 border-indigo-500/35 shadow-lg shadow-indigo-500/15 scale-95"
+                      : "bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.15] hover:scale-105"
+                  } disabled:opacity-40`}
+                >
+                  <img
+                    src={u.avatarUrl}
+                    alt={u.fullName}
+                    className="w-10 h-10 rounded-full object-cover ring-2 ring-white/[0.08] group-hover:ring-white/[0.18] transition-all"
+                  />
+                  <p className="text-[10px] font-semibold text-white truncate w-full text-center leading-tight">
+                    {u.fullName.split(" ").slice(-1)[0]}
+                  </p>
+                  <span className={`text-[8px] px-1.5 py-0.5 rounded border font-semibold ${roleColors[u.role] || ""}`}>
+                    {roleLabels[u.role]?.split(" ")[0] || u.role}
+                  </span>
+                </button>
               ))}
             </div>
           </div>
 
-          {/* Footer */}
-          <p className="text-center text-[11px] text-slate-600 mt-8">
+          <p className="text-center text-[11px] text-slate-600 mt-6">
             &copy; 2024 CyberRevenue &middot; Built for Kumasi Metropolitan Assembly
           </p>
         </div>

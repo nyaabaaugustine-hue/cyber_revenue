@@ -18,8 +18,9 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { dashboardStats, revenueTrend, categoryBreakdown, agentStats, businesses, formatCurrency } from "../utils/data";
+import { formatCurrency } from "../utils/data";
 import { AgentStats } from "../types";
+import { useDashboardMetrics, useRevenueTrends, useCategoryBreakdown, useAgents } from "@/hooks/useApiData";
 
 const COLORS = [
   "hsl(var(--primary))",
@@ -41,19 +42,33 @@ export function Reports() {
   const [selectedAgent, setSelectedAgent] = useState<AgentStats | null>(null);
   const [period, setPeriod] = useState("weekly");
 
+  const { data: metrics } = useDashboardMetrics();
+  const { data: trends = [] } = useRevenueTrends();
+  const { data: categories = [] } = useCategoryBreakdown();
+  const { data: agentsData } = useAgents();
+  const agents = agentsData?.data ?? [];
+
+  if (!metrics) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   const revenue =
     period === "daily"
-      ? dashboardStats.todayRevenue
+      ? Number(metrics.revenueToday ?? 0)
       : period === "weekly"
-        ? dashboardStats.weekRevenue
-        : dashboardStats.monthRevenue;
+        ? Number(metrics.revenueThisWeek ?? 0)
+        : Number(metrics.revenueThisMonth ?? 0);
 
   const collections =
     period === "daily"
-      ? dashboardStats.todayCollections
+      ? Number(metrics.collectionsToday ?? 0)
       : period === "weekly"
-        ? dashboardStats.weekCollections
-        : dashboardStats.weekCollections * 4;
+        ? Number(metrics.collectionsThisWeek ?? 0)
+        : Number(metrics.collectionsThisMonth ?? 0);
 
   return (
     <div className="space-y-6">
@@ -75,25 +90,25 @@ export function Reports() {
           <Button variant="outline" size="sm" onClick={() => {
             const rows = [
               ["Period", period],
-              ["Total Revenue", formatCurrency(revenue)],
-              ["Active Agents", String(dashboardStats.activeAgents)],
-              ["Total Agents", String(dashboardStats.totalAgents)],
+              ["Total Revenue", formatCurrency(Number(revenue))],
+              ["Active Agents", String(metrics.agentsActive)],
+              ["Total Agents", String(metrics.agentsTotal)],
               ["Collections", String(collections)],
-              ["Collection Rate", dashboardStats.collectionRate + "%"],
-              ["Businesses Registered", String(dashboardStats.businessesRegistered)],
-              ["Businesses Active", String(dashboardStats.businessesActive)],
-              ["Businesses Flagged", String(dashboardStats.businessesFlagged)],
+              ["Collection Rate", String(metrics.agentsAvgPerformance) + "%"],
+              ["Businesses Registered", String(metrics.businessesTotal)],
+              ["Businesses Active", String(metrics.businessesActive)],
+              ["Businesses Flagged", String(metrics.businessesFlagged)],
               [],
               ["Agent Performance"],
               ["Rank", "Agent", "Zone", "Today", "Week", "Month", "Score"],
-              ...[...agentStats].sort((a, b) => b.performanceScore - a.performanceScore).map((a, i) => [
-                String(i + 1), a.officerName, a.zone, formatCurrency(a.todayAmount),
-                formatCurrency(a.weekAmount), formatCurrency(a.monthAmount), String(a.performanceScore)
+              ...[...agents].sort((a, b) => b.performanceScore - a.performanceScore).map((a, i) => [
+                String(i + 1), a.officerName, a.zone, formatCurrency(Number(a.todayAmount)),
+                formatCurrency(Number(a.weekAmount)), formatCurrency(Number(a.monthAmount)), String(a.performanceScore)
               ]),
               [],
               ["Revenue Trend"],
               ["Date", "Amount"],
-              ...revenueTrend.map(r => [r.date, formatCurrency(r.amount)]),
+              ...trends.map(r => [r.date, formatCurrency(Number(r.amount))]),
             ];
             const csv = rows.map(r => (r || []).join(",")).join("\n");
             const blob = new Blob([csv], { type: "text/csv" });
@@ -139,9 +154,9 @@ export function Reports() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats.activeAgents}</div>
+            <div className="text-2xl font-bold">{metrics.agentsActive}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              of {dashboardStats.totalAgents} total agents
+              of {metrics.agentsTotal} total agents
             </p>
           </CardContent>
         </Card>
@@ -157,7 +172,7 @@ export function Reports() {
           <CardContent>
             <div className="text-2xl font-bold">{collections.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {dashboardStats.collectionRate}% collection rate
+              {Math.round(Number(metrics.agentsAvgPerformance ?? 0))}% collection rate
             </p>
           </CardContent>
         </Card>
@@ -173,7 +188,7 @@ export function Reports() {
           <CardContent>
             <div className="text-2xl font-bold">+12.5%</div>
             <p className="text-xs text-muted-foreground mt-1">
-              vs target of {formatCurrency(dashboardStats.targetRevenue)}
+              vs target of {formatCurrency(Number(metrics.revenueTarget ?? 0))}
             </p>
           </CardContent>
         </Card>
@@ -187,7 +202,7 @@ export function Reports() {
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueTrend}>
+                <BarChart data={trends.map(t => ({ ...t, amount: Number(t.amount), target: Number(t.target) }))}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis
                     dataKey="date"
@@ -227,7 +242,7 @@ export function Reports() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={categoryBreakdown}
+                    data={categories.map(c => ({ ...c, revenue: Number(c.revenue) }))}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -236,7 +251,7 @@ export function Reports() {
                     dataKey="revenue"
                     nameKey="category"
                   >
-                    {categoryBreakdown.map((_, i) => (
+                    {categories.map((_, i) => (
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
                   </Pie>
@@ -265,9 +280,9 @@ export function Reports() {
           <Button variant="outline" size="sm" onClick={() => {
             const rows = [
               ["Rank", "Agent", "Zone", "Today", "Week", "Month", "Collections", "Score"],
-              ...[...agentStats].sort((a, b) => b.performanceScore - a.performanceScore).map((a, i) => [
-                String(i + 1), a.officerName, a.zone, formatCurrency(a.todayAmount),
-                formatCurrency(a.weekAmount), formatCurrency(a.monthAmount),
+              ...[...agents].sort((a, b) => b.performanceScore - a.performanceScore).map((a, i) => [
+                String(i + 1), a.officerName, a.zone, formatCurrency(Number(a.todayAmount)),
+                formatCurrency(Number(a.weekAmount)), formatCurrency(Number(a.monthAmount)),
                 String(a.todayCollections), String(a.performanceScore)
               ]),
             ];
@@ -314,7 +329,7 @@ export function Reports() {
                 </tr>
               </thead>
               <tbody>
-                {[...agentStats]
+                {[...agents]
                   .sort((a, b) => b.performanceScore - a.performanceScore)
                   .map((agent, index) => (
                     <Sheet key={agent.officerId}>
@@ -341,11 +356,11 @@ export function Reports() {
                         <td className="py-3 px-4 text-muted-foreground">{agent.zone}</td>
                         <td className="py-3 px-4">
                           <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                            {formatCurrency(agent.todayAmount)}
+                            {formatCurrency(Number(agent.todayAmount))}
                           </span>
                         </td>
                         <td className="py-3 px-4 font-medium">
-                          {formatCurrency(agent.weekAmount)}
+                          {formatCurrency(Number(agent.weekAmount))}
                         </td>
                         <td className="py-3 px-4 text-muted-foreground">
                           {agent.todayCollections}
@@ -380,7 +395,7 @@ export function Reports() {
                           </div>
                           <div className="flex justify-between py-2 border-b">
                             <span className="text-muted-foreground">Revenue (Month)</span>
-                            <span className="font-medium">{formatCurrency(agent.monthAmount)}</span>
+                            <span className="font-medium">{formatCurrency(Number(agent.monthAmount))}</span>
                           </div>
                           <div className="py-2 border-b">
                             <div className="flex justify-between mb-2">
