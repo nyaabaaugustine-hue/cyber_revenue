@@ -41,7 +41,7 @@ export const getZoneBusinesses = async (req: Request, res: Response, next: NextF
   try {
     const { zoneId } = req.params;
     const { search } = req.query;
-    successResponse(res, await collectionService.getZoneBusinesses(zoneId, search as string));
+    successResponse(res, await collectionService.getZoneBusinesses(String(zoneId), search as string));
   } catch (e) { next(e); }
 };
 

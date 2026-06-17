@@ -15,7 +15,7 @@ export const list = async (req: Request, res: Response, next: NextFunction) => {
 
 export const getById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const biz = await businessService.getById(req.params.id);
+    const biz = await businessService.getById(String(req.params.id));
     successResponse(res, biz);
   } catch (e) { next(e); }
 };
@@ -29,7 +29,7 @@ export const create = async (req: Request, res: Response, next: NextFunction) =>
 
 export const update = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const biz = await businessService.update(req.params.id, req.body);
+    const biz = await businessService.update(String(req.params.id), req.body);
     successResponse(res, biz, 'Business updated');
   } catch (e) { next(e); }
 };
@@ -42,7 +42,7 @@ export const listCategories = async (_req: Request, res: Response, next: NextFun
 };
 export const getCollectionsByBusiness = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const data = await businessService.getCollectionsByBusiness(req.params.id);
+    const data = await businessService.getCollectionsByBusiness(String(req.params.id));
     successResponse(res, data);
   } catch (e) { next(e); }
 };

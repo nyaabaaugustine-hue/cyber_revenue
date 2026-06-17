@@ -2,7 +2,6 @@ import { pgTable, text, timestamp, boolean, varchar, decimal, integer, index } f
 import { sql } from 'drizzle-orm';
 import { userRoles } from './enums';
 import { districts } from './districts';
-import { zones } from './zones';
 
 export const users = pgTable('users', {
   id: text('id').primaryKey().default(sql`gen_random_uuid()::text`),
@@ -13,7 +12,7 @@ export const users = pgTable('users', {
   role: varchar('role', { length: 50, enum: userRoles }).notNull().default('field_officer'),
   districtId: text('district_id').references(() => districts.id),
   districtName: varchar('district_name', { length: 255 }),
-  zoneId: text('zone_id').references(() => zones.id),
+  zoneId: text('zone_id'),
   zoneName: varchar('zone_name', { length: 255 }),
   avatarUrl: varchar('avatar_url', { length: 500 }),
   isActive: boolean('is_active').notNull().default(true),

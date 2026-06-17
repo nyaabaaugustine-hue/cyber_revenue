@@ -43,8 +43,8 @@ export const create = async (body: any) => {
         totalOutstanding: String(newOutstanding),
         levyStatus: newLevyStatus,
         lastAmountPaid: String(amt),
-        lastPaymentDate: new Date().toISOString(),
-        lastVisitedAt: new Date().toISOString(),
+        lastPaymentDate: new Date(),
+        lastVisitedAt: new Date(),
       }).where(eq(businesses.id, body.businessId))
     }
   }

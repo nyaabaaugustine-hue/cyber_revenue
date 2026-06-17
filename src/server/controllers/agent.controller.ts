@@ -7,11 +7,11 @@ export const list = async (_req: Request, res: Response, next: NextFunction) => 
 };
 
 export const getById = async (req: Request, res: Response, next: NextFunction) => {
-  try { successResponse(res, await agentService.getById(req.params.id)); } catch (e) { next(e); }
+  try { successResponse(res, await agentService.getById(String(req.params.id))); } catch (e) { next(e); }
 };
 
 export const update = async (req: Request, res: Response, next: NextFunction) => {
-  try { successResponse(res, await agentService.update(req.params.id, req.body)); } catch (e) { next(e); }
+  try { successResponse(res, await agentService.update(String(req.params.id), req.body)); } catch (e) { next(e); }
 };
 
 export const updateLocation = async (req: Request, res: Response, next: NextFunction) => {

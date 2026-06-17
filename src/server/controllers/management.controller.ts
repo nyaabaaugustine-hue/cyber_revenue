@@ -6,13 +6,13 @@ export const listAnomalies = async (_req: Request, res: Response, next: NextFunc
   try { successResponse(res, await managementService.listAnomalies()); } catch (e) { next(e); }
 };
 export const resolveAnomaly = async (req: Request, res: Response, next: NextFunction) => {
-  try { successResponse(res, await managementService.resolveAnomaly(req.params.id, req.user!.id)); } catch (e) { next(e); }
+  try { successResponse(res, await managementService.resolveAnomaly(String(req.params.id), req.user!.id)); } catch (e) { next(e); }
 };
 export const listDisputes = async (_req: Request, res: Response, next: NextFunction) => {
   try { successResponse(res, await managementService.listDisputes()); } catch (e) { next(e); }
 };
 export const updateDispute = async (req: Request, res: Response, next: NextFunction) => {
-  try { successResponse(res, await managementService.updateDispute(req.params.id, req.body)); } catch (e) { next(e); }
+  try { successResponse(res, await managementService.updateDispute(String(req.params.id), req.body)); } catch (e) { next(e); }
 };
 export const listComplianceChecks = async (_req: Request, res: Response, next: NextFunction) => {
   try { successResponse(res, await managementService.listComplianceChecks()); } catch (e) { next(e); }

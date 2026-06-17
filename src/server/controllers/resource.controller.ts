@@ -12,7 +12,7 @@ export const listRemittances = async (_req: Request, res: Response, next: NextFu
   try { successResponse(res, await resourceService.listRemittances()); } catch (e) { next(e); }
 };
 export const updateRemittance = async (req: Request, res: Response, next: NextFunction) => {
-  try { successResponse(res, await resourceService.updateRemittance(req.params.id, req.body)); } catch (e) { next(e); }
+  try { successResponse(res, await resourceService.updateRemittance(String(req.params.id), req.body)); } catch (e) { next(e); }
 };
 export const listAssets = async (_req: Request, res: Response, next: NextFunction) => {
   try { successResponse(res, await resourceService.listAssets()); } catch (e) { next(e); }
@@ -21,7 +21,7 @@ export const listNotifications = async (req: Request, res: Response, next: NextF
   try { successResponse(res, await resourceService.listNotifications(req.user!.id)); } catch (e) { next(e); }
 };
 export const markNotificationRead = async (req: Request, res: Response, next: NextFunction) => {
-  try { successResponse(res, await resourceService.markNotificationRead(req.params.id)); } catch (e) { next(e); }
+  try { successResponse(res, await resourceService.markNotificationRead(String(req.params.id))); } catch (e) { next(e); }
 };
 export const listLedgerEntries = async (_req: Request, res: Response, next: NextFunction) => {
   try { successResponse(res, await resourceService.listLedgerEntries()); } catch (e) { next(e); }

@@ -2,6 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt.utils.js';
 import { AppError } from './error.middleware.js';
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { id: string; email: string; role: string };
+    }
+  }
+}
+
 export const authenticate = (req: Request, _res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
