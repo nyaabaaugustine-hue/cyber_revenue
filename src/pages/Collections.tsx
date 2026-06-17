@@ -53,7 +53,7 @@ export function Collections() {
     return matchesSearch && matchesPayment && matchesDate;
   });
 
-  const totalAmount = filteredCollections.reduce((sum, c) => sum + c.amount, 0);
+  const totalAmount = filteredCollections.reduce((sum, c) => sum + Number(c.amount), 0);
 
   const paymentMethodLabels: Record<string, string> = {
     cash: "Cash",
@@ -62,7 +62,7 @@ export function Collections() {
     other: "Other",
   };
 
-  const totalDue = dueCollectionsList.reduce((s, d) => s + d.amountDue, 0);
+  const totalDue = dueCollectionsList.reduce((s, d) => s + Number(d.amountDue), 0);
   const overdueCount = dueCollectionsList.filter(d => d.status === 'overdue').length;
   const dueSoonCount = dueCollectionsList.filter(d => d.daysOverdue <= 0 && d.daysOverdue >= -3).length;
 
