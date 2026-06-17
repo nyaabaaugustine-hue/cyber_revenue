@@ -22,17 +22,25 @@ const USE_MOCK = import.meta.env.VITE_USE_MOCK_BACKEND === 'true' || !import.met
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    if (!USE_MOCK) {
-      const storeUser = useAuthStore.getState().user;
-      if (storeUser) return storeUser as User;
+    if (USE_MOCK) {
+      return currentUser;
     }
-    return currentUser;
+    const storeUser = useAuthStore.getState().user;
+    if (storeUser) return storeUser as User;
+    const hasToken = !!useAuthStore.getState().token;
+    if (hasToken) return null;
+    return null;
   });
   const [originalUser, setOriginalUser] = useState<User | null>(null);
 
   useEffect(() => {
-    if (!USE_MOCK && useAuthStore.getState().isAuthenticated && !user) {
-      loadCurrentUser();
+    if (!USE_MOCK) {
+      const hasToken = !!useAuthStore.getState().token;
+      if (hasToken && !user) {
+        loadCurrentUser();
+      } else if (!hasToken) {
+        setUser(null);
+      }
     }
   }, []);
 

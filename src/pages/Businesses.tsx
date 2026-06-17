@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { IcnSearch as Search, IcnPlus as Plus, IcnPhone as Phone, IcnMapPin as MapPin, IcnClock as Clock, IcnBuilding as Building2, IcnUser as User, IcnDollar as DollarSign, IcnFile as FileText, IcnNav as Navigation } from "@/components/ui/Icons";
 import { useNavigate } from "react-router-dom";
-import { businesses, formatDate } from "../utils/data";
+import { useBusinesses } from "../hooks/useApiData";
+import { formatDate } from "../utils/data";
 import { useAuth } from "../utils/AuthContext";
 import { hasPermission } from "../utils/permissions";
+import type { Business } from "../types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -56,10 +59,13 @@ export function Businesses() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedBusiness, setSelectedBusiness] = useState<typeof businesses[number] | null>(null);
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [formPhoto, setFormPhoto] = useState("");
 
-  const filteredBusinesses = businesses.filter((b) => {
+  const { data: businessesData, isLoading } = useBusinesses({ limit: 100 });
+  const allBusinesses = businessesData?.data || [];
+
+  const filteredBusinesses = allBusinesses.filter((b) => {
     const matchesSearch =
       b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       b.businessId.toLowerCase().includes(searchTerm.toLowerCase());
@@ -73,9 +79,50 @@ export function Businesses() {
     setFormPhoto("");
   };
 
-  const handleViewOnMap = (b: typeof businesses[number]) => {
+  const handleViewOnMap = (b: Business) => {
     navigate(`/map?business=${b.businessId}&lat=${b.location.lat}&lng=${b.location.lng}`);
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="flex flex-wrap items-center gap-4">
+          <Skeleton className="h-10 flex-1 min-w-[280px]" />
+          <Skeleton className="h-10 w-[160px]" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <Skeleton className="h-40 w-full" />
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-40" />
+                    <Skeleton className="h-3 w-28" />
+                  </div>
+                  <Skeleton className="h-5 w-16" />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-0">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -320,7 +367,7 @@ export function Businesses() {
                   <DollarSign className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-muted-foreground text-xs">Total Outstanding</p>
-                    <p className="font-medium">GHS {selectedBusiness.totalOutstanding.toLocaleString()}</p>
+                    <p className="font-medium">GHS {Number(selectedBusiness.totalOutstanding).toLocaleString()}</p>
                   </div>
                 </div>
                 {selectedBusiness.lastPaymentDate && (
@@ -330,7 +377,7 @@ export function Businesses() {
                       <p className="text-muted-foreground text-xs">Last Payment</p>
                       <p className="font-medium">{formatDate(selectedBusiness.lastPaymentDate)}</p>
                       {selectedBusiness.lastAmountPaid != null && (
-                        <p className="text-xs text-muted-foreground">GHS {selectedBusiness.lastAmountPaid.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">GHS {Number(selectedBusiness.lastAmountPaid).toLocaleString()}</p>
                       )}
                     </div>
                   </div>
