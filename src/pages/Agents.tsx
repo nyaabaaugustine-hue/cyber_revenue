@@ -13,9 +13,11 @@ import {
   IcnRefresh as Refresh,
   IcnEye as Eye,
   IcnWarning as AlertTriangle,
+  IcnClock as Clock,
+  IcnDollar as DollarSign,
 } from "@/components/ui/Icons";
 import { useNavigate } from "react-router-dom";
-import { agentStats, formatCurrency, formatDate } from "../utils/data";
+import { formatCurrency, formatDate } from "../utils/data";
 import { useAgents, useUpdateAgent } from "../hooks/useAgents";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,13 +36,13 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 
-const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" }> = {
-  "in-field": { label: "In Field", variant: "success" },
-  "on-break": { label: "On Break", variant: "warning" },
-  offline: { label: "Offline", variant: "secondary" },
-  active: { label: "In Field", variant: "success" },
-  online: { label: "Online", variant: "success" },
-  break: { label: "On Break", variant: "warning" },
+const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning"; dot: string }> = {
+  "in-field": { label: "In Field", variant: "success", dot: "bg-emerald-500" },
+  "on-break": { label: "On Break", variant: "warning", dot: "bg-amber-500" },
+  offline: { label: "Offline", variant: "secondary", dot: "bg-muted-foreground" },
+  active: { label: "In Field", variant: "success", dot: "bg-emerald-500" },
+  online: { label: "Online", variant: "success", dot: "bg-emerald-500" },
+  break: { label: "On Break", variant: "warning", dot: "bg-amber-500" },
 };
 
 function statusVariant(s: string) {
@@ -49,6 +51,10 @@ function statusVariant(s: string) {
 
 function statusLabel(s: string) {
   return statusMap[s]?.label ?? s;
+}
+
+function statusDot(s: string) {
+  return statusMap[s]?.dot ?? "bg-muted-foreground";
 }
 
 function initials(name: string) {
@@ -66,28 +72,23 @@ export function Agents() {
   const [selectedAgent, setSelectedAgent] = useState<any | null>(null);
   const updateAgent = useUpdateAgent();
 
-  // Try real API, fall back to mock data
   const { data: apiAgents, isLoading, refetch } = useAgents();
-  const agents = (apiAgents as any)?.data || apiAgents || agentStats;
+  const agents = (Array.isArray(apiAgents) ? apiAgents : (apiAgents as any)?.data) || [];
 
-  const filtered = Array.isArray(agents)
-    ? agents.filter(
-        (a: any) =>
-          (a.officerName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (a.zone || "").toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : agentStats.filter(
-        (a) =>
-          a.officerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          a.zone.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  const filtered = agents.filter(
+    (a: any) =>
+      (a.officerName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (a.zone || "").toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const totalToday = filtered.reduce((s: number, a: any) => s + (a.todayAmount || 0), 0);
+  const totalToday = filtered.reduce((s: number, a: any) => s + Number(a.todayAmount || 0), 0);
+  const totalWeek = filtered.reduce((s: number, a: any) => s + Number(a.weekAmount || 0), 0);
+  const totalMonth = filtered.reduce((s: number, a: any) => s + Number(a.monthAmount || 0), 0);
   const avgPerf =
     filtered.length > 0
       ? filtered.reduce((s: number, a: any) => s + (a.performanceScore || 0), 0) / filtered.length
       : 0;
-  const activeNow = filtered.filter((a: any) => a.isActive || a.status === "online" || a.status === "active").length;
+  const activeNow = filtered.filter((a: any) => a.status === "online" || a.status === "active").length;
 
   const handleStatusChange = async (agent: any, newStatus: string) => {
     try {
@@ -99,12 +100,34 @@ export function Agents() {
     }
   };
 
+  if (isLoading && agents.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div><h2 className="text-2xl font-bold tracking-tight">Agent Management</h2></div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {[1,2,3].map(i => (
+            <Card key={i}><CardContent className="p-6"><div className="animate-pulse flex items-center gap-4"><div className="h-10 w-10 rounded-lg bg-muted" /><div className="space-y-2 flex-1"><div className="h-4 bg-muted rounded w-1/3" /><div className="h-6 bg-muted rounded w-1/2" /></div></div></CardContent></Card>
+          ))}
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1,2,3,4,5].map(i => (
+            <Card key={i}><CardContent className="p-6"><div className="animate-pulse space-y-3"><div className="flex items-center gap-3"><div className="h-12 w-12 rounded-full bg-muted" /><div className="space-y-2 flex-1"><div className="h-4 bg-muted rounded w-2/3" /><div className="h-3 bg-muted rounded w-1/2" /></div></div><div className="h-2 bg-muted rounded w-full" /></div></CardContent></Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Agent Management</h2>
-          <p className="text-sm text-muted-foreground">{filtered.length} agents registered</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {filtered.length} agents &bull; {activeNow} active in field
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -118,42 +141,63 @@ export function Agents() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-              <TrendingUp className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Today</p>
-              <p className="text-2xl font-bold">{formatCurrency(totalToday)}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
-              <Star className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Avg Performance</p>
-              <p className="text-2xl font-bold">{avgPerf.toFixed(1)}%</p>
+      {/* Stat Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="border-l-4 border-l-emerald-500">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Today's Revenue</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{formatCurrency(totalToday)}</p>
+              </div>
+              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-emerald-500" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-              <Users className="h-5 w-5" />
+        <Card className="border-l-4 border-l-blue-500">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Week Revenue</p>
+                <p className="text-2xl font-bold mt-1">{formatCurrency(totalWeek)}</p>
+              </div>
+              <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-blue-500" />
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Active Now</p>
-              <p className="text-2xl font-bold">{activeNow}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-l-4 border-l-amber-500">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Avg Performance</p>
+                <p className="text-2xl font-bold mt-1">{avgPerf.toFixed(1)}%</p>
+              </div>
+              <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <Star className="h-5 w-5 text-amber-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-l-4 border-l-violet-500">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium">Active Now</p>
+                <p className="text-2xl font-bold mt-1">{activeNow}<span className="text-lg text-muted-foreground">/{filtered.length}</span></p>
+              </div>
+              <div className="h-10 w-10 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-violet-500" />
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Search + View Toggle */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -182,46 +226,59 @@ export function Agents() {
         </div>
       </div>
 
+      {/* Agent Grid / List */}
       {viewMode === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((agent: any) => (
             <Card
-              key={agent.officerId || agent.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
+              key={agent.id || agent.officerId}
+              className="cursor-pointer hover:shadow-lg hover:border-primary/30 transition-all duration-200 group"
               onClick={() => setSelectedAgent(agent)}
             >
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={agent.avatarUrl} alt={agent.officerName} />
-                      <AvatarFallback>{initials(agent.officerName)}</AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className="h-12 w-12 ring-2 ring-background group-hover:ring-primary/20 transition-all">
+                        <AvatarImage src={agent.avatarUrl} alt={agent.officerName} />
+                        <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">{initials(agent.officerName)}</AvatarFallback>
+                      </Avatar>
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-card ${statusDot(agent.status)}`} />
+                    </div>
                     <div>
-                      <p className="font-semibold">{agent.officerName}</p>
-                      <p className="text-sm text-muted-foreground">{agent.zone}</p>
+                      <p className="font-semibold text-sm">{agent.officerName}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {agent.zone}
+                      </p>
                     </div>
                   </div>
-                  <Badge variant={statusVariant(agent.status)}>
+                  <Badge variant={statusVariant(agent.status)} className="text-[10px] h-5">
                     {statusLabel(agent.status)}
                   </Badge>
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Today Collections</p>
-                    <p className="font-medium">{agent.todayCollections || 0}</p>
+
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div className="text-center p-2 rounded-lg bg-muted/50">
+                    <p className="text-lg font-bold">{agent.todayCollections || 0}</p>
+                    <p className="text-[10px] text-muted-foreground">Collections</p>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground">Today Amount</p>
-                    <p className="font-medium">{formatCurrency(agent.todayAmount || 0)}</p>
+                  <div className="text-center p-2 rounded-lg bg-muted/50">
+                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(Number(agent.todayAmount || 0))}</p>
+                    <p className="text-[10px] text-muted-foreground">Amount</p>
+                  </div>
+                  <div className="text-center p-2 rounded-lg bg-muted/50">
+                    <p className="text-lg font-bold">{agent.todayVisits ?? 0}</p>
+                    <p className="text-[10px] text-muted-foreground">Visits</p>
                   </div>
                 </div>
-                <div className="mt-4 space-y-1">
-                  <div className="flex items-center justify-between text-sm">
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Performance</span>
                     <span className="font-medium">{agent.performanceScore || 0}%</span>
                   </div>
-                  <Progress value={agent.performanceScore || 0} className="h-2" />
+                  <Progress value={agent.performanceScore || 0} className="h-1.5" />
                 </div>
               </CardContent>
             </Card>
@@ -244,33 +301,39 @@ export function Agents() {
             <TableBody>
               {filtered.map((agent: any) => (
                 <TableRow
-                  key={agent.officerId || agent.id}
-                  className="cursor-pointer"
+                  key={agent.id || agent.officerId}
+                  className="cursor-pointer hover:bg-muted/50"
                   onClick={() => setSelectedAgent(agent)}
                 >
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={agent.avatarUrl} alt={agent.officerName} />
-                        <AvatarFallback className="text-xs">{initials(agent.officerName)}</AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">{agent.officerName}</span>
+                      <div className="relative">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={agent.avatarUrl} alt={agent.officerName} />
+                          <AvatarFallback className="text-xs">{initials(agent.officerName)}</AvatarFallback>
+                        </Avatar>
+                        <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card ${statusDot(agent.status)}`} />
+                      </div>
+                      <div>
+                        <span className="font-medium text-sm">{agent.officerName}</span>
+                        <p className="text-xs text-muted-foreground">{agent.officerPhone || "—"}</p>
+                      </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{agent.zone}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{agent.zone}</TableCell>
                   <TableCell>
-                    <Badge variant={statusVariant(agent.status)}>
+                    <Badge variant={statusVariant(agent.status)} className="text-[10px] h-5">
                       {statusLabel(agent.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">{agent.todayCollections || 0}</TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatCurrency(agent.todayAmount || 0)}
+                  <TableCell className="text-right text-sm">{agent.todayCollections || 0}</TableCell>
+                  <TableCell className="text-right text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    {formatCurrency(Number(agent.todayAmount || 0))}
                   </TableCell>
                   <TableCell className="min-w-[120px]">
                     <div className="flex items-center gap-2">
-                      <Progress value={agent.performanceScore || 0} className="h-2 flex-1" />
-                      <span className="text-sm font-medium">{agent.performanceScore || 0}%</span>
+                      <Progress value={agent.performanceScore || 0} className="h-1.5 flex-1" />
+                      <span className="text-xs font-medium w-8 text-right">{agent.performanceScore || 0}%</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
@@ -278,10 +341,7 @@ export function Agents() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate("/map");
-                      }}
+                      onClick={(e) => { e.stopPropagation(); navigate("/map"); }}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -308,7 +368,6 @@ export function Agents() {
           </SheetHeader>
           {selectedAgent && (
             <div className="mt-6 space-y-5">
-              {/* Status Badge */}
               <div className="flex items-center gap-2">
                 <Badge variant={statusVariant(selectedAgent.status)}>
                   {statusLabel(selectedAgent.status)}
@@ -318,37 +377,28 @@ export function Agents() {
                 </span>
               </div>
 
-              {/* Supervisory Status Controls */}
               <div className="bg-muted/50 rounded-lg p-3">
                 <p className="text-xs font-medium text-muted-foreground mb-2">Change Status</p>
                 <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant={selectedAgent.status === "online" || selectedAgent.status === "active" ? "default" : "outline"}
-                    onClick={() => handleStatusChange(selectedAgent, "online")}
-                  >
-                    In Field
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={selectedAgent.status === "break" || selectedAgent.status === "on-break" ? "default" : "outline"}
-                    onClick={() => handleStatusChange(selectedAgent, "break")}
-                  >
-                    On Break
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={selectedAgent.status === "offline" ? "default" : "outline"}
-                    onClick={() => handleStatusChange(selectedAgent, "offline")}
-                  >
-                    Offline
-                  </Button>
+                  {[
+                    { value: "online", label: "In Field" },
+                    { value: "break", label: "On Break" },
+                    { value: "offline", label: "Offline" },
+                  ].map((opt) => (
+                    <Button
+                      key={opt.value}
+                      size="sm"
+                      variant={selectedAgent.status === opt.value ? "default" : "outline"}
+                      onClick={() => handleStatusChange(selectedAgent, opt.value)}
+                    >
+                      {opt.label}
+                    </Button>
+                  ))}
                 </div>
               </div>
 
               <Separator />
 
-              {/* Performance Score */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground text-xs">Performance Score</span>
@@ -359,7 +409,6 @@ export function Agents() {
 
               <Separator />
 
-              {/* Today's Stats */}
               <div>
                 <h4 className="text-sm font-semibold mb-3">Today</h4>
                 <div className="grid grid-cols-3 gap-4 text-sm">
@@ -368,11 +417,11 @@ export function Agents() {
                     <p className="text-xs text-muted-foreground">Collections</p>
                   </div>
                   <div className="bg-muted rounded-lg p-3 text-center">
-                    <p className="text-lg font-bold">{formatCurrency(selectedAgent.todayAmount || 0)}</p>
+                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(Number(selectedAgent.todayAmount || 0))}</p>
                     <p className="text-xs text-muted-foreground">Amount</p>
                   </div>
                   <div className="bg-muted rounded-lg p-3 text-center">
-                    <p className="text-lg font-bold">{selectedAgent.todayVisits ?? "-"}</p>
+                    <p className="text-lg font-bold">{selectedAgent.todayVisits ?? 0}</p>
                     <p className="text-xs text-muted-foreground">Visits</p>
                   </div>
                 </div>
@@ -380,55 +429,42 @@ export function Agents() {
 
               <Separator />
 
-              {/* Weekly / Monthly */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground text-xs">Weekly Collections</p>
                   <p className="font-medium">{selectedAgent.weekCollections || 0}</p>
-                  <p className="text-xs text-muted-foreground">{formatCurrency(selectedAgent.weekAmount || 0)}</p>
+                  <p className="text-xs text-muted-foreground">{formatCurrency(Number(selectedAgent.weekAmount || 0))}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Monthly Collections</p>
                   <p className="font-medium">{selectedAgent.monthCollections || 0}</p>
-                  <p className="text-xs text-muted-foreground">{formatCurrency(selectedAgent.monthAmount || 0)}</p>
+                  <p className="text-xs text-muted-foreground">{formatCurrency(Number(selectedAgent.monthAmount || 0))}</p>
                 </div>
               </div>
 
-              <Separator />
-
-              {/* Target Progress */}
               {(selectedAgent.targetAmount || 0) > 0 && (
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground text-xs">Target Progress</span>
-                    <span className="font-medium text-sm">{selectedAgent.targetPercent || 0}%</span>
+                <>
+                  <Separator />
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground text-xs">Target Progress</span>
+                      <span className="font-medium text-sm">{selectedAgent.targetPercent || 0}%</span>
+                    </div>
+                    <Progress value={Number(selectedAgent.targetPercent || 0)} className="h-2" />
+                    <p className="text-xs text-muted-foreground">
+                      {formatCurrency(Number(selectedAgent.todayAmount || 0))} / {formatCurrency(Number(selectedAgent.targetAmount || 0))}
+                    </p>
                   </div>
-                  <Progress value={selectedAgent.targetPercent || 0} className="h-2" />
-                  <p className="text-xs text-muted-foreground">
-                    GHS {(selectedAgent.todayAmount || 0).toLocaleString()} / GHS {(selectedAgent.targetAmount || 0).toLocaleString()}
-                  </p>
-                </div>
+                </>
               )}
 
-              {/* Quick Actions */}
               <Separator />
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    toast.info("Opening map...");
-                    navigate("/map");
-                  }}
-                >
+                <Button variant="outline" className="flex-1" onClick={() => { toast.info("Opening map..."); navigate("/map"); }}>
                   <MapPin className="w-4 h-4 mr-2" />
                   View on Map
                 </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => toast.info("Calling agent...")}
-                >
+                <Button variant="outline" className="flex-1" onClick={() => toast.info("Calling agent...")}>
                   <Phone className="w-4 h-4 mr-2" />
                   Call Agent
                 </Button>

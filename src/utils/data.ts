@@ -177,7 +177,8 @@ export const businesses: Business[] = [
     lastVisitedAt: "2024-06-08T16:30:00Z",
     lastCollectionAmount: 500,
     totalCollected: 3200,
-    notes: "Flagged for duplicate collection investigation"
+    notes: "Flagged for duplicate collection investigation",
+    documents: bizDocuments["3"],
   },
   {
     ...defaultBiz,
@@ -201,7 +202,8 @@ export const businesses: Business[] = [
     registeredAt: "2024-01-28T09:00:00Z",
     lastVisitedAt: "2024-06-11T10:45:00Z",
     lastCollectionAmount: 350,
-    totalCollected: 4200
+    totalCollected: 4200,
+    documents: bizDocuments["4"],
   },
   {
     ...defaultBiz,
@@ -225,7 +227,8 @@ export const businesses: Business[] = [
     registeredAt: "2024-02-10T13:20:00Z",
     lastVisitedAt: "2024-05-20T11:00:00Z",
     lastCollectionAmount: 0,
-    totalCollected: 980
+    totalCollected: 980,
+    documents: bizDocuments["5"],
   },
   {
     ...defaultBiz,
@@ -249,7 +252,8 @@ export const businesses: Business[] = [
     registeredAt: "2024-04-01T08:00:00Z",
     lastVisitedAt: "2024-06-13T15:30:00Z",
     lastCollectionAmount: 120,
-    totalCollected: 1560
+    totalCollected: 1560,
+    documents: bizDocuments["6"],
   }
 ];
 

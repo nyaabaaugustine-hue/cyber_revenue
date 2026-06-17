@@ -8,6 +8,7 @@ import {
   IcnRefresh as Refresh,
   IcnWarning as AlertTriangle,
   IcnPhone as Phone,
+  IcnShield as Shield,
 } from "@/components/ui/Icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
