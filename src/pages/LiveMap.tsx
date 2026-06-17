@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { IcnSearch as Search, IcnLayers as Layers, IcnMapPin as MapPin, IcnUsers as Users, IcnActivity as Activity, IcnX as X, IcnBuilding as Building2, IcnPhone as Phone, IcnClock as Clock, IcnList as List, IcnGrid as Grid3X3, IcnNav as Navigation } from "@/components/ui/Icons";
 import { MapView } from "../components/MapView";
-import { businesses, zones, formatCurrency } from "../utils/data";
+import { formatCurrency } from "../utils/data";
+import { useBusinesses, useZones, useAgents } from "@/hooks/useApiData";
 import { useAuthStore } from "../store/authStore";
 import { Business, AgentStats } from "../types";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,10 @@ export function LiveMap() {
   const [liveAgents, setLiveAgents] = useState<AgentStats[]>([]);
   const [searchParams] = useSearchParams();
   const token = useAuthStore(s => s.token);
+  const { data: businessesData } = useBusinesses({ limit: 100 });
+  const businesses = businessesData?.data ?? [];
+  const { data: zonesData = [] } = useZones();
+  const zones = zonesData;
 
   useEffect(() => {
     const fetchLocations = async () => {

@@ -37,14 +37,6 @@ const roleColors: Record<string, string> = {
   field_officer: "bg-rose-500/20 text-rose-300 border-rose-500/30",
 };
 
-const roleAccent: Record<string, string> = {
-  admin: "bg-indigo-600",
-  supervisor: "bg-violet-600",
-  accountant: "bg-emerald-600",
-  manager: "bg-cyan-600",
-  field_officer: "bg-rose-600",
-};
-
 export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -203,8 +195,8 @@ export function Login() {
             <p className="text-slate-400 text-sm mt-1.5">District Revenue Command System</p>
           </div>
 
-          {/* Form Card */}
-          <div className="bg-white/[0.06] border border-white/[0.1] rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/40">
+          {/* Form Card — Enhanced visibility */}
+          <div className="bg-white/[0.10] border border-white/[0.12] rounded-2xl p-6 sm:p-8 shadow-2xl shadow-black/50">
             <div className="mb-6">
               <h2 className="text-3xl font-bold text-white tracking-tight">Welcome back</h2>
               <p className="text-slate-300 text-sm mt-2">Sign in to access the command center</p>
@@ -230,7 +222,7 @@ export function Login() {
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setError(""); }}
                     autoFocus
-                    className="pl-11 h-12 bg-white/[0.07] border-white/[0.12] text-white placeholder:text-slate-500 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/15 rounded-xl transition-all text-[15px]"
+                    className="pl-11 h-12 bg-white/[0.08] border-white/[0.15] text-white placeholder:text-slate-500 focus:border-indigo-400/80 focus:ring-indigo-400/20 rounded-xl transition-all text-[15px]"
                   />
                 </div>
               </div>
@@ -244,7 +236,7 @@ export function Login() {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                    className="pl-11 pr-11 h-12 bg-white/[0.07] border-white/[0.12] text-white placeholder:text-slate-500 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/15 rounded-xl transition-all text-[15px]"
+                    className="pl-11 pr-11 h-12 bg-white/[0.08] border-white/[0.15] text-white placeholder:text-slate-500 focus:border-indigo-400/80 focus:ring-indigo-400/20 rounded-xl transition-all text-[15px]"
                   />
                   <button
                     type="button"
@@ -290,36 +282,44 @@ export function Login() {
                 <div className="w-full border-t border-white/[0.08]" />
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-3 py-1 bg-white/[0.06] rounded-full text-slate-400 border border-white/[0.08]">or</span>
+                <span className="px-3 py-1 bg-white/[0.10] rounded-full text-slate-400 border border-white/[0.08]">or</span>
               </div>
             </div>
 
-            {/* Quick Select — Horizontal Row */}
-            <div className="grid grid-cols-6 gap-2">
-              {availableUsers.map((u) => (
-                <button
-                  key={u.id}
-                  onClick={() => quickLogin(u)}
-                  disabled={isLoading}
-                  className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all duration-200 group ${
-                    selectedQuick === u.id
-                      ? "bg-indigo-500/15 border-indigo-500/35 shadow-lg shadow-indigo-500/15 scale-95"
-                      : "bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.15] hover:scale-105"
-                  } disabled:opacity-40`}
-                >
-                  <img
-                    src={u.avatarUrl}
-                    alt={u.fullName}
-                    className="w-10 h-10 rounded-full object-cover ring-2 ring-white/[0.08] group-hover:ring-white/[0.18] transition-all"
-                  />
-                  <p className="text-[10px] font-semibold text-white truncate w-full text-center leading-tight">
-                    {u.fullName.split(" ").slice(-1)[0]}
-                  </p>
-                  <span className={`text-[8px] px-1.5 py-0.5 rounded border font-semibold ${roleColors[u.role] || ""}`}>
-                    {roleLabels[u.role]?.split(" ")[0] || u.role}
-                  </span>
-                </button>
-              ))}
+            {/* Quick Select — 2 rows of 3 for better visibility */}
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-3 text-center">Quick Access</p>
+              <div className="grid grid-cols-3 gap-3">
+                {availableUsers.map((u) => (
+                  <button
+                    key={u.id}
+                    onClick={() => quickLogin(u)}
+                    disabled={isLoading}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all duration-200 group ${
+                      selectedQuick === u.id
+                        ? "bg-indigo-500/15 border-indigo-500/35 shadow-lg shadow-indigo-500/15 scale-95"
+                        : "bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.15] hover:scale-105"
+                    } disabled:opacity-40`}
+                  >
+                    <img
+                      src={u.avatarUrl}
+                      alt={u.fullName}
+                      className="w-12 h-12 rounded-full object-cover ring-2 ring-white/[0.10] group-hover:ring-white/[0.20] transition-all"
+                    />
+                    <div className="text-center min-w-0 w-full">
+                      <p className="text-[11px] font-semibold text-white truncate leading-tight">
+                        {u.fullName.split(" ").slice(-1)[0]}
+                      </p>
+                      <p className="text-[9px] text-slate-500 truncate mt-0.5">
+                        {u.fullName.split(" ").slice(0, -1).join(" ")}
+                      </p>
+                      <span className={`text-[9px] px-2 py-0.5 rounded border font-semibold mt-1.5 inline-block ${roleColors[u.role] || ""}`}>
+                        {roleLabels[u.role] || u.role}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

@@ -2,7 +2,8 @@ import { useState } from "react";
 import { IcnSettings as SettingsIcon, IcnShield as Shield, IcnBell as Bell, IcnGlobe as Globe, IcnCircle as Palette, IcnDatabase as Database, IcnSave as Save } from "@/components/ui/Icons";
 import { useAuth } from "../utils/AuthContext";
 import { hasPermission } from "../utils/permissions";
-import { formatCurrency, businesses } from "../utils/data";
+import { formatCurrency } from "../utils/data";
+import { useBusinesses } from "@/hooks/useApiData";
 import { useTheme } from "../components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -19,6 +20,8 @@ export function Settings() {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("general");
+  const { data: businessesData } = useBusinesses({ limit: 100 });
+  const businesses = businessesData?.data ?? [];
 
   if (!hasPermission(user?.role || "admin", "settings", "view")) {
     return (

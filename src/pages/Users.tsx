@@ -2,7 +2,8 @@ import { useState } from "react";
 import { IcnShield as Shield, IcnPlus as Plus, IcnSearch as Search, IcnMail as Mail, IcnEdit as Edit, IcnMoreV as MoreVertical, IcnUser as LoginAsIcon } from "@/components/ui/Icons";
 import { useAuth } from "../utils/AuthContext";
 import { hasPermission, roleLabels, roleBadgeStyles } from "../utils/permissions";
-import { users, agentStats, formatDate } from "../utils/data";
+import { formatDate } from "../utils/data";
+import { useUsers, useAgents } from "@/hooks/useApiData";
 import { User, UserRole } from "../types";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -20,6 +21,9 @@ export function Users() {
   const { user: currentUser, loginAs, stopImpersonation, isImpersonating } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
+  const { data: usersData = [], isLoading: usersLoading } = useUsers();
+  const { data: agentsData } = useAgents();
+  const agentStats = agentsData?.data ?? [];
 
   if (!hasPermission(currentUser?.role || "admin", "users", "view")) {
     return (
@@ -34,7 +38,7 @@ export function Users() {
   }
 
   const allUsers: User[] = [
-    ...users,
+    ...usersData,
     ...agentStats.map((a) => ({
       id: a.officerId,
       fullName: a.officerName,

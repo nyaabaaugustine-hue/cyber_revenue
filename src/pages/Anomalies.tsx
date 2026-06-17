@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { IcnSearch as Search, IcnWarning as AlertTriangle, IcnAlertCircle as AlertCircle, IcnInfo as Info, IcnCheckCircle2 as CheckCircle2 } from "@/components/ui/Icons";
-import { anomalies, formatDate } from "../utils/data";
+import { formatDate } from "../utils/data";
+import { useAnomalies, useResolveAnomaly } from "@/hooks/useApiData";
 import { Anomaly } from "../types";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -35,7 +36,8 @@ export function Anomalies() {
   const [searchTerm, setSearchTerm] = useState("");
   const [severityFilter, setSeverityFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("active");
-  const [anomalyList, setAnomalyList] = useState(anomalies);
+  const { data: anomalyList = [], isLoading } = useAnomalies();
+  const resolveAnomaly = useResolveAnomaly();
 
   const stats = useMemo(() => {
     const total = anomalyList.length;
@@ -57,9 +59,7 @@ export function Anomalies() {
   }, [anomalyList, activeTab, severityFilter, searchTerm]);
 
   const handleResolve = (id: string) => {
-    setAnomalyList((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, isResolved: true } : a))
-    );
+    resolveAnomaly.mutate(id);
   };
 
   return (
@@ -71,6 +71,12 @@ export function Anomalies() {
         </p>
       </div>
 
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        <>
       <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -293,6 +299,8 @@ export function Anomalies() {
           </Card>
         </TabsContent>
       </Tabs>
+        </>
+      )}
     </div>
   );
 }

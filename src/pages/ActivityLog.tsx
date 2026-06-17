@@ -12,6 +12,7 @@ import {
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger,
 } from "@/components/ui/sheet";
+import { useActivityLog } from "@/hooks/useApiData";
 
 const severityIcon: Record<string, React.ElementType> = {
   info: Activity,
@@ -115,6 +116,26 @@ export function ActivityLog() {
   const [search, setSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
   const [entries, setEntries] = useState<ActivityEntry[]>(() => generateEvents(40, true));
+  const { data: apiEntries, isLoading } = useActivityLog({ page: 1, limit: 100 });
+
+  useEffect(() => {
+    if (apiEntries?.data && apiEntries.data.length > 0) {
+      const mapped: ActivityEntry[] = apiEntries.data.map((e: any) => ({
+        id: e.id,
+        timestamp: e.timestamp || e.createdAt,
+        actorId: e.actorId,
+        actorName: e.actorName,
+        actorRole: e.actorRole,
+        action: e.action,
+        resourceType: e.resourceType,
+        resourceId: e.resourceId,
+        resourceName: e.resourceName || '',
+        details: e.details || e.action,
+        severity: e.severity || 'info',
+      }));
+      setEntries(mapped);
+    }
+  }, [apiEntries]);
 
   useEffect(() => {
     const interval = setInterval(() => {
