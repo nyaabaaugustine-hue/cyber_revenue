@@ -195,7 +195,7 @@ function SidebarNav({ collapsed, onToggle }: { collapsed: boolean; onToggle: () 
           <ChevronLeft className={cn("w-4 h-4 transition-transform", collapsed && "rotate-180")} />
           {!collapsed && <span className="text-xs">Collapse</span>}
         </button>
-        {!collapsed && (
+        {/* {!collapsed && (
           <a
             href="https://cybergh.netlify.app"
             target="_blank"
@@ -204,7 +204,7 @@ function SidebarNav({ collapsed, onToggle }: { collapsed: boolean; onToggle: () 
           >
             BUILT BY CYBER
           </a>
-        )}
+        )} */}
       </div>
     </aside>
   );
