@@ -372,7 +372,7 @@ function AppLayout() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="gap-2 px-2">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.avatarUrl || "https://images.unsplash.com/photo-1472099625465-8c8e0b8e8e0b?w=32&h=32&fit=crop&crop=face"} />
+                    <AvatarImage src={user?.avatarUrl || ""} />
                     <AvatarFallback>{user?.fullName?.split(' ').map(n => n[0]).join('') || 'AD'}</AvatarFallback>
                   </Avatar>
                   <div className="hidden lg:block text-left">

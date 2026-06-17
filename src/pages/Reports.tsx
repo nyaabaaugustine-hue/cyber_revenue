@@ -72,7 +72,39 @@ export function Reports() {
               <TabsTrigger value="monthly">Monthly</TabsTrigger>
             </TabsList>
           </Tabs>
-          <Button variant="outline" size="sm" onClick={() => toast.success('Report exported as PDF')}>
+          <Button variant="outline" size="sm" onClick={() => {
+            const rows = [
+              ["Period", period],
+              ["Total Revenue", formatCurrency(revenue)],
+              ["Active Agents", String(dashboardStats.activeAgents)],
+              ["Total Agents", String(dashboardStats.totalAgents)],
+              ["Collections", String(collections)],
+              ["Collection Rate", dashboardStats.collectionRate + "%"],
+              ["Businesses Registered", String(dashboardStats.businessesRegistered)],
+              ["Businesses Active", String(dashboardStats.businessesActive)],
+              ["Businesses Flagged", String(dashboardStats.businessesFlagged)],
+              [],
+              ["Agent Performance"],
+              ["Rank", "Agent", "Zone", "Today", "Week", "Month", "Score"],
+              ...[...agentStats].sort((a, b) => b.performanceScore - a.performanceScore).map((a, i) => [
+                String(i + 1), a.officerName, a.zone, formatCurrency(a.todayAmount),
+                formatCurrency(a.weekAmount), formatCurrency(a.monthAmount), String(a.performanceScore)
+              ]),
+              [],
+              ["Revenue Trend"],
+              ["Date", "Amount"],
+              ...revenueTrend.map(r => [r.date, formatCurrency(r.amount)]),
+            ];
+            const csv = rows.map(r => (r || []).join(",")).join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `kma-report-${period}-${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success("Report exported as CSV");
+          }}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>

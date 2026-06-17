@@ -9,7 +9,7 @@ export const currentUser: User = {
   role: "admin",
   districtId: "dist-1",
   districtName: "Kumasi Metropolitan",
-  avatarUrl: "https://ui-avatars.com/api/?name=Kwame+Asante&background=1e3a5f&color=fff&size=200&bold=true",
+  avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1d7c059347?w=200&h=200&fit=crop&crop=face",
   isActive: true,
   lastActiveAt: "2024-06-14T10:30:00Z"
 };
@@ -545,7 +545,7 @@ export const users: User[] = [
     role: "admin",
     districtId: "dist-1",
     districtName: "Kumasi Metropolitan",
-    avatarUrl: "https://ui-avatars.com/api/?name=Kwame+Asante&background=1e3a5f&color=fff&size=200&bold=true",
+    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1d7c059347?w=200&h=200&fit=crop&crop=face",
     isActive: true,
     lastActiveAt: "2024-06-14T10:30:00Z"
   },
@@ -559,7 +559,7 @@ export const users: User[] = [
     districtName: 'Kumasi Metropolitan',
     zoneId: "zone-1",
     zoneName: "Zone A - Central",
-    avatarUrl: "https://ui-avatars.com/api/?name=Abena+Yiadom&background=8b5cf6&color=fff&size=200&bold=true",
+    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face",
     isActive: true,
     lastActiveAt: "2024-06-14T10:25:00Z"
   },
@@ -571,7 +571,7 @@ export const users: User[] = [
     role: "supervisor",
     districtId: "dist-1",
     districtName: 'Kumasi Metropolitan',
-    avatarUrl: "https://ui-avatars.com/api/?name=John+Mensah&background=0891b2&color=fff&size=200&bold=true",
+    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face",
     isActive: true,
     lastActiveAt: "2024-06-14T09:00:00Z"
   },
@@ -583,7 +583,7 @@ export const users: User[] = [
     role: "accountant",
     districtId: "dist-1",
     districtName: "Kumasi Metropolitan",
-    avatarUrl: "https://ui-avatars.com/api/?name=Esi+Gyan&background=059669&color=fff&size=200&bold=true",
+    avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face",
     isActive: true,
     lastActiveAt: "2024-06-14T08:45:00Z"
   },
@@ -595,7 +595,7 @@ export const users: User[] = [
     role: "manager",
     districtId: "dist-1",
     districtName: "Kumasi Metropolitan",
-    avatarUrl: "https://ui-avatars.com/api/?name=Kwabena+Danso&background=7c3aed&color=fff&size=200&bold=true",
+    avatarUrl: "https://images.unsplash.com/photo-1472099625465-8c8e0b8e8e0b?w=200&h=200&fit=crop&crop=face",
     isActive: true,
     lastActiveAt: "2024-06-14T07:30:00Z"
   },
@@ -609,7 +609,7 @@ export const users: User[] = [
     districtName: "Kumasi Metropolitan",
     zoneId: "zone-2",
     zoneName: "Zone B - Adum",
-    avatarUrl: "https://ui-avatars.com/api/?name=Kofi+Appiah&background=dc2626&color=fff&size=200&bold=true",
+    avatarUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
     isActive: true,
     lastActiveAt: "2024-06-14T06:00:00Z"
   }

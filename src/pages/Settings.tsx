@@ -119,6 +119,73 @@ export function Settings() {
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Agent Commission Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Enable Agent Commissions</p>
+                  <p className="text-xs text-muted-foreground">Automatically calculate commissions from collections</p>
+                </div>
+                <Switch defaultChecked />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="commission-rate">Commission Rate (%)</Label>
+                  <Input id="commission-rate" type="number" step="0.1" min="0" max="50" defaultValue="7" />
+                  <p className="text-xs text-muted-foreground">Percentage of each collection paid as commission</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="commission-cap">Monthly Cap (GHS)</Label>
+                  <Input id="commission-cap" type="number" defaultValue="5000" />
+                  <p className="text-xs text-muted-foreground">Maximum commission per agent per month</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="commission-min">Minimum Collection Threshold (GHS)</Label>
+                <Input id="commission-min" type="number" defaultValue="100" />
+                <p className="text-xs text-muted-foreground">Minimum collection amount to earn commission</p>
+              </div>
+              <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+                <p className="text-sm font-medium text-foreground">Commission Calculation Example</p>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>Agent collects GHS 5,000 in a month at 7% rate</p>
+                  <p>Commission = GHS 5,000 x 7% = <span className="font-bold text-emerald-500">{formatCurrency(350)}</span></p>
+                  <p>Capped at GHS 5,000/month — under cap</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="commission-freq">Payout Frequency</Label>
+                  <Select defaultValue="monthly">
+                    <SelectTrigger id="commission-freq">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="biweekly">Bi-Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="commission-tier">Tiered Commission</Label>
+                  <Select defaultValue="flat">
+                    <SelectTrigger id="commission-tier">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="flat">Flat Rate</SelectItem>
+                      <SelectItem value="tiered">Tiered (Higher rate for higher volume)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">
