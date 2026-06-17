@@ -44,10 +44,10 @@ export function FieldAgentDashboard() {
   const offlineCount = getOfflineCount();
 
   const stats = [
-    { label: "Today's Collections", value: agentData.todayCollections, icon: ReceiptIcon, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-    { label: "Today's Revenue", value: formatCurrency(agentData.todayAmount), icon: DollarSign, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-    { label: "Businesses Visited", value: agentData.todayVisits, icon: Building, color: "text-purple-500", bg: "bg-purple-500/10", border: "border-purple-500/20" },
-    { label: "Performance Score", value: `${agentData.performanceScore}%`, icon: TrendingUp, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+    { label: "Collections", value: agentData.todayCollections, icon: ReceiptIcon, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { label: "Revenue", value: formatCurrency(agentData.todayAmount), icon: DollarSign, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "Visited", value: agentData.todayVisits, icon: Building, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { label: "Score", value: `${agentData.performanceScore}%`, icon: TrendingUp, color: "text-amber-500", bg: "bg-amber-500/10" },
   ];
 
   const targetProgress = agentData.targetAmount > 0
@@ -70,42 +70,38 @@ export function FieldAgentDashboard() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4 pb-20 sm:pb-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Field Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-lg font-bold text-foreground truncate">Field Dashboard</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground truncate">
             {agentData.zone} &middot;{" "}
             <span className="text-emerald-500 font-medium">Active</span>
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {offlineCount > 0 && (
-            <Button variant="outline" size="sm" className="text-amber-500 border-amber-500/30">
-              <AlertTriangle className="w-4 h-4 mr-1" />
-              {offlineCount} pending
-            </Button>
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+              <AlertTriangle className="w-3 h-3 text-amber-500" />
+              <span className="text-[10px] font-bold text-amber-500">{offlineCount}</span>
+            </div>
           )}
-          <Button size="sm" onClick={() => setShowCollectionForm(true)}>
-            <ReceiptIcon className="w-4 h-4 mr-2" />
-            New Collection
-          </Button>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats Grid — 2x2 on mobile */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         {stats.map((stat, i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold mt-1">{stat.value}</p>
+          <Card key={i} className="overflow-hidden">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
+                  <stat.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.color}`} />
                 </div>
-                <div className={`w-10 h-10 rounded-lg ${stat.bg} border ${stat.border} flex items-center justify-center`}>
-                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{stat.label}</p>
+                  <p className="text-lg sm:text-2xl font-bold truncate">{stat.value}</p>
                 </div>
               </div>
             </CardContent>
@@ -116,106 +112,181 @@ export function FieldAgentDashboard() {
       {/* Target Progress */}
       {agentData.targetAmount > 0 && (
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center justify-between mb-2 gap-2">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Daily Target</span>
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
+                <span className="text-xs sm:text-sm font-medium">Daily Target</span>
               </div>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
                 {formatCurrency(Number(agentData.todayAmount))} / {formatCurrency(agentData.targetAmount)}
               </span>
             </div>
-            <div className="w-full bg-muted rounded-full h-2.5">
-              <div className="bg-indigo-500 h-2.5 rounded-full transition-all" style={{ width: `${Math.min(targetProgress, 100)}%` }} />
+            <div className="w-full bg-muted rounded-full h-2 sm:h-2.5">
+              <div
+                className={`h-2 sm:h-2.5 rounded-full transition-all ${targetProgress >= 80 ? 'bg-emerald-500' : targetProgress >= 50 ? 'bg-amber-500' : 'bg-indigo-500'}`}
+                style={{ width: `${Math.min(targetProgress, 100)}%` }}
+              />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">{targetProgress.toFixed(0)}% of daily target</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{targetProgress.toFixed(0)}% completed</p>
           </CardContent>
         </Card>
       )}
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="businesses">Businesses ({filteredBusinesses.length})</TabsTrigger>
-          <TabsTrigger value="history">Collection History ({agentCollections.length})</TabsTrigger>
+        <TabsList className="w-full h-auto">
+          <TabsTrigger value="businesses" className="flex-1 text-xs sm:text-sm">
+            Businesses ({filteredBusinesses.length})
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flex-1 text-xs sm:text-sm">
+            History ({agentCollections.length})
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="businesses" className="space-y-4">
+        <TabsContent value="businesses" className="space-y-3 mt-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Search businesses..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 h-9" />
+            <Input placeholder="Search businesses..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 h-10 sm:h-9 text-sm" />
           </div>
 
-          <Card>
-            <CardContent className="p-0 divide-y">
-              {filteredBusinesses.map((biz) => (
-                <div key={biz.id} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/50 transition-colors">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground">
-                    {biz.name.charAt(0)}
+          <div className="space-y-2">
+            {filteredBusinesses.map((biz) => (
+              <Card key={biz.id} className="overflow-hidden">
+                <CardContent className="p-0">
+                  {/* Business Info */}
+                  <div className="p-3 sm:p-4">
+                    <div className="flex items-start gap-3">
+                      {biz.photos && biz.photos[0] ? (
+                        <img
+                          src={biz.photos[0]}
+                          alt={biz.name}
+                          className="w-12 h-12 rounded-lg object-cover shrink-0"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-lg font-bold text-muted-foreground shrink-0">
+                          {biz.name.charAt(0)}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold truncate">{biz.name}</p>
+                          <Badge variant="outline" className={`text-[10px] shrink-0 ${
+                            biz.levyStatus === "paid" ? "text-emerald-500 border-emerald-500/30" :
+                            biz.levyStatus === "overdue" ? "text-red-500 border-red-500/30" :
+                            "text-amber-500 border-amber-500/30"
+                          }`}>
+                            {biz.levyStatus}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{biz.ownerName}</p>
+                        <p className="text-[11px] text-muted-foreground/70 mt-0.5 flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {biz.locationDescription || 'No location'}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{biz.name}</p>
-                    <p className="text-xs text-muted-foreground">{biz.ownerName} &middot; {biz.ownerPhone}</p>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant="outline" className={
-                      biz.levyStatus === "paid" ? "text-emerald-500 border-emerald-500/30" :
-                      biz.levyStatus === "overdue" ? "text-red-500 border-red-500/30" :
-                      "text-amber-500 border-amber-500/30"
-                    }>
-                      {biz.levyStatus}
-                    </Badge>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.open(`tel:${biz.ownerPhone}`)}>
+
+                  {/* Action Buttons — full width on mobile */}
+                  <div className="flex border-t divide-x">
+                    <button
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-blue-600 hover:bg-blue-500/5 active:bg-blue-500/10 transition-colors"
+                      onClick={() => window.open(`tel:${biz.ownerPhone}`)}
+                    >
                       <Phone className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast.info("Opening maps...")}>
+                      Call
+                    </button>
+                    <button
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-muted-foreground hover:bg-muted/50 active:bg-muted transition-colors"
+                      onClick={() => toast.info("Opening maps...")}
+                    >
                       <Navigation className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button size="sm" className="h-8 text-xs" onClick={() => handleCollect(biz)}>
+                      Navigate
+                    </button>
+                    <button
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold text-emerald-600 bg-emerald-500/5 hover:bg-emerald-500/10 active:bg-emerald-500/15 transition-colors"
+                      onClick={() => handleCollect(biz)}
+                    >
+                      <DollarSign className="w-3.5 h-3.5" />
                       Collect
-                    </Button>
+                    </button>
                   </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            ))}
+
+            {filteredBusinesses.length === 0 && (
+              <div className="text-center py-10">
+                <Building className="w-10 h-10 mx-auto text-muted-foreground/30 mb-2" />
+                <p className="text-sm text-muted-foreground">No businesses found</p>
+              </div>
+            )}
+          </div>
         </TabsContent>
 
-        <TabsContent value="history" className="space-y-4">
-          <Card>
-            <CardContent className="p-0 divide-y">
-              {agentCollections.map((col) => (
-                <div key={col.id} className="flex items-center gap-4 px-4 py-3">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                    <ReceiptIcon className="w-5 h-5 text-emerald-500" />
+        <TabsContent value="history" className="space-y-2 mt-3">
+          {agentCollections.length === 0 ? (
+            <div className="text-center py-10">
+              <ReceiptIcon className="w-10 h-10 mx-auto text-muted-foreground/30 mb-2" />
+              <p className="text-sm text-muted-foreground">No collections yet today</p>
+            </div>
+          ) : (
+            agentCollections.map((col) => (
+              <Card key={col.id}>
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                      <ReceiptIcon className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{col.businessName}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-[10px] text-muted-foreground font-mono">{col.receiptNumber}</p>
+                        {col.gpsVerified && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 text-emerald-500 border-emerald-500/30">
+                            GPS
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-bold text-emerald-600">{formatCurrency(col.amount)}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {new Date(col.collectionDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{col.businessName}</p>
-                    <p className="text-xs text-muted-foreground font-mono">{col.receiptNumber}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold">{formatCurrency(col.amount)}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{col.paymentMethod?.replace("_", " ")}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(col.collectionDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </p>
-                    {col.gpsVerified && (
-                      <Badge variant="outline" className="text-[10px] text-emerald-500 border-emerald-500/30 mt-0.5">
-                        GPS
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </TabsContent>
       </Tabs>
+
+      {/* Floating Collect Button — mobile only */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 sm:hidden z-40 bg-gradient-to-t from-background via-background to-transparent pointer-events-none">
+        <Button
+          size="lg"
+          className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 pointer-events-auto"
+          onClick={() => setShowCollectionForm(true)}
+        >
+          <ReceiptIcon className="w-4 h-4 mr-2" />
+          New Collection
+        </Button>
+      </div>
+
+      {/* Desktop New Collection button */}
+      <div className="hidden sm:block">
+        <Button
+          className="w-full"
+          onClick={() => setShowCollectionForm(true)}
+        >
+          <ReceiptIcon className="w-4 h-4 mr-2" />
+          New Collection
+        </Button>
+      </div>
 
       {/* Collection Form */}
       {showCollectionForm && (

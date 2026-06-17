@@ -126,10 +126,10 @@ export function Login() {
           backgroundSize: '50px 50px'
         }} />
 
-        {/* Floating Glow Orbs */}
-        <div className="absolute top-20 left-20 w-72 h-72 bg-indigo-500/10 rounded-full blur-[100px] animate-pulse" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-violet-500/8 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-emerald-500/6 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '4s' }} />
+        {/* Floating Glow Orbs — static for performance */}
+        <div className="absolute top-20 left-20 w-72 h-72 bg-indigo-500/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-violet-500/8 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-emerald-500/6 rounded-full blur-[80px]" />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
@@ -219,8 +219,8 @@ export function Login() {
             <p className="text-slate-400 text-sm mt-1.5">District Revenue Command System</p>
           </div>
 
-          {/* Form Card */}
-          <div className="bg-white/[0.06] backdrop-blur-2xl border border-white/[0.1] rounded-3xl p-8 shadow-2xl shadow-black/40">
+          {/* Form Card — no backdrop-blur for performance */}
+          <div className="bg-white/[0.06] border border-white/[0.1] rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/40">
             {/* Header */}
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-white tracking-tight">Welcome back</h2>

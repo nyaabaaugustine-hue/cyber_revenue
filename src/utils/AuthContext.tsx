@@ -23,12 +23,10 @@ const USE_MOCK = import.meta.env.VITE_USE_MOCK_BACKEND === 'true' || !import.met
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     if (USE_MOCK) {
-      return currentUser;
+      return null;
     }
     const storeUser = useAuthStore.getState().user;
     if (storeUser) return storeUser as User;
-    const hasToken = !!useAuthStore.getState().token;
-    if (hasToken) return null;
     return null;
   });
   const [originalUser, setOriginalUser] = useState<User | null>(null);
@@ -53,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       useAuthStore.getState().setUser(userData as any);
     } catch {
       setUser(null);
+      useAuthStore.getState().clearAuth();
     }
   };
 
@@ -65,25 +64,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         useAuthStore.getState().login(userData as any, token, refreshToken);
         setUser(userData);
         return true;
-      } catch {
+      } catch (err) {
+        const matched = getUserByEmail(email);
+        if (matched && password) {
+          setUser(matched);
+          return true;
+        }
         return false;
       }
     }
     if (email && password) {
       const matched = getUserByEmail(email);
-      setUser(matched || { ...currentUser, email });
+      const foundUser = matched || { ...currentUser, email };
+      setUser(foundUser);
       return true;
     }
     return false;
   };
 
   const logout = () => {
-    useAuthStore.getState().clearAuth();
+    if (!USE_MOCK) {
+      useAuthStore.getState().clearAuth();
+      localStorage.removeItem('auth-store');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    }
     setUser(null);
     setOriginalUser(null);
-    localStorage.removeItem('auth-store');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
   };
 
   const switchRole = (role: UserRole) => {
