@@ -50,11 +50,9 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showQuickSelect, setShowQuickSelect] = useState(false);
   const [error, setError] = useState("");
-  const [selectedQuick, setSelectedQuick] = useState<string | null>(null);
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  const { login, availableUsers, isAuthenticated } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -310,69 +308,18 @@ export function Login() {
               </Button>
             </form>
 
-            {/* Divider */}
-            <div className="relative my-7">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/[0.08]" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-4 py-1 bg-white/[0.06] rounded-full text-slate-400 border border-white/[0.08]">or continue with demo account</span>
-              </div>
+            {/* Stats */}
+            <div className="mt-6 grid grid-cols-3 gap-3">
+              {features.map((f, i) => (
+                <div key={i} className="flex flex-col items-center text-center p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${f.color} flex items-center justify-center mb-2 shadow-lg shadow-black/20 ring-1 ring-white/10`}>
+                    <f.icon className="w-4 h-4 text-white" />
+                  </div>
+                  <p className="text-[11px] font-semibold text-white/90 leading-tight">{f.label}</p>
+                  <p className="text-[9px] text-slate-500 mt-0.5">{f.sub}</p>
+                </div>
+              ))}
             </div>
-
-            {/* Quick Select Toggle */}
-            <button
-              onClick={() => setShowQuickSelect(!showQuickSelect)}
-              className="w-full py-3 px-4 rounded-xl border border-white/[0.1] bg-white/[0.04] hover:bg-white/[0.08] text-sm text-slate-300 hover:text-white transition-all duration-200 flex items-center justify-center gap-2 font-medium"
-            >
-              <UsersIcon className="w-4 h-4" />
-              {showQuickSelect ? "Hide demo accounts" : "Select a demo account"}
-            </button>
-
-            {/* Demo Accounts */}
-            {showQuickSelect && (
-              <div className="mt-4 space-y-2.5 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin">
-                {availableUsers.map((u) => (
-                  <button
-                    key={u.id}
-                    onClick={() => quickLogin(u)}
-                    disabled={isLoading}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 text-left group ${
-                      selectedQuick === u.id
-                        ? "bg-indigo-500/15 border-indigo-500/35 shadow-lg shadow-indigo-500/15"
-                        : "bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.15]"
-                    } disabled:opacity-40`}
-                  >
-                    {/* Avatar */}
-                    <div className="relative shrink-0">
-                      <img
-                        src={u.avatarUrl}
-                        alt={u.fullName}
-                        className="w-12 h-12 rounded-xl object-cover ring-2 ring-white/[0.08] group-hover:ring-white/[0.18] transition-all"
-                      />
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full ${roleAccent[u.role]} border-2 border-slate-900 flex items-center justify-center`}>
-                        <CheckCircle className="w-2.5 h-2.5 text-white" />
-                      </div>
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[15px] font-semibold text-white truncate">{u.fullName}</p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <span className={`text-[11px] px-2.5 py-0.5 rounded-md border font-semibold ${roleColors[u.role] || ""}`}>
-                          {roleLabels[u.role] || u.role}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Arrow */}
-                    <svg className="w-5 h-5 text-slate-600 group-hover:text-indigo-400 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Footer */}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { IcnSearch as Search, IcnDownload as Download, IcnDollar as DollarSign, IcnCalendar as Calendar, IcnReceipt as Receipt, IcnUser as User, IcnSmartphone as Smartphone, IcnMapPin as MapPin, IcnFile as FileText, IcnWarning as AlertTriangle, IcnCheckCircle2 as CheckCircle2, IcnClock as Clock } from "@/components/ui/Icons";
-import { recentCollections, dueCollections, formatCurrency, formatDate } from "../utils/data";
+import { formatCurrency, formatDate } from "../utils/data";
+import { useCollections, useDueCollections } from "@/hooks/useApiData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,9 +24,15 @@ export function Collections() {
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
-  const [selectedCollection, setSelectedCollection] = useState<typeof recentCollections[number] | null>(null);
 
-  const filteredCollections = recentCollections.filter(c => {
+  const { data: collectionsData, isLoading: collectionsLoading } = useCollections({ page: 1, limit: 100 });
+  const collections = collectionsData?.data ?? [];
+  const { data: dueCollections, isLoading: dueLoading } = useDueCollections();
+  const dueCollectionsList = dueCollections ?? [];
+
+  const [selectedCollection, setSelectedCollection] = useState<typeof collections[number] | null>(null);
+
+  const filteredCollections = collections.filter(c => {
     const matchesSearch = c.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           c.receiptNumber.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPayment = paymentFilter === "all" || c.paymentMethod === paymentFilter;
@@ -55,9 +62,9 @@ export function Collections() {
     other: "Other",
   };
 
-  const totalDue = dueCollections.reduce((s, d) => s + d.amountDue, 0);
-  const overdueCount = dueCollections.filter(d => d.status === 'overdue').length;
-  const dueSoonCount = dueCollections.filter(d => d.daysOverdue <= 0 && d.daysOverdue >= -3).length;
+  const totalDue = dueCollectionsList.reduce((s, d) => s + d.amountDue, 0);
+  const overdueCount = dueCollectionsList.filter(d => d.status === 'overdue').length;
+  const dueSoonCount = dueCollectionsList.filter(d => d.daysOverdue <= 0 && d.daysOverdue >= -3).length;
 
   const handleExportCSV = () => {
     const rows = filteredCollections.map(c => `${c.receiptNumber},${c.businessName},${c.officerName},${c.amount},${c.paymentMethod},${c.collectionDate}`);
@@ -78,7 +85,7 @@ export function Collections() {
     toast.success(`Collection initiated for ${businessName}`);
   };
 
-  const handlePrintReceipt = (c: typeof recentCollections[number]) => {
+  const handlePrintReceipt = (c: typeof collections[number]) => {
     const r = c;
     const qr = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(JSON.stringify({ receipt: r.receiptNumber, amount: r.amount, business: r.businessName, date: r.collectionDate, agent: r.officerName }))}&bgcolor=ffffff&color=1e1b4b&margin=6`;
     const html = `<!DOCTYPE html><html><head><title>Receipt ${r.receiptNumber}</title><style>
@@ -123,7 +130,7 @@ export function Collections() {
     toast.success(`Receipt ${r.receiptNumber} sent to printer`);
   };
 
-  const handleWhatsAppReceipt = (c: typeof recentCollections[number]) => {
+  const handleWhatsAppReceipt = (c: typeof collections[number]) => {
     const msg = encodeURIComponent(
       `*KMA Revenue Receipt*\n` +
       `━━━━━━━━━━━━━━━━━━━━━\n` +
@@ -141,7 +148,7 @@ export function Collections() {
     toast.success(`Receipt shared via WhatsApp`);
   };
 
-  const handleEmailReceipt = (c: typeof recentCollections[number]) => {
+  const handleEmailReceipt = (c: typeof collections[number]) => {
     const subject = encodeURIComponent(`KMA Revenue Receipt - ${c.receiptNumber}`);
     const body = encodeURIComponent(
       `KUMASI METROPOLITAN ASSEMBLY\n` +
@@ -159,6 +166,22 @@ export function Collections() {
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
     toast.success(`Receipt email opened`);
   };
+
+  if (collectionsLoading || dueLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Collections</h2>
+            <p className="text-sm text-muted-foreground">Track and manage all revenue collections</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -427,7 +450,7 @@ export function Collections() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-foreground">{formatCurrency(totalDue)}</div>
-                <p className="text-xs text-muted-foreground mt-1">{dueCollections.length} pending payments</p>
+                <p className="text-xs text-muted-foreground mt-1">{dueCollectionsList.length} pending payments</p>
               </CardContent>
             </Card>
             <Card>
@@ -451,7 +474,7 @@ export function Collections() {
           </div>
 
           <div className="grid gap-3">
-            {dueCollections
+            {dueCollectionsList
               .sort((a, b) => b.daysOverdue - a.daysOverdue)
               .map(d => (
                 <Card key={d.id} className="hover:shadow-md transition-shadow">
